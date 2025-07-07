@@ -7,38 +7,17 @@
 
 body {
     font-family: 'Inter', sans-serif;
-    background-color: #e9eff4;
-    color: #1c2930;
+    background-color: #fafafa;
+    color: #000000;
     line-height: 1.6;
     min-height: 100vh;
-    font-weight: 400;
-}
-
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
-}
-
-/* Typography */
-.title {
-    font-family: 'Cardo', serif;
-    font-size: 3rem;
-    font-weight: 700;
-    color: #1c2930;
-    margin-bottom: 0.5rem;
-}
-
-.subtitle {
-    font-size: 1.1rem;
-    color: #6b7280;
     font-weight: 300;
 }
 
-/* Header */
-.header {
-    text-align: center;
-    margin-bottom: 3rem;
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
 }
 
 /* Hidden utility class */
@@ -46,115 +25,145 @@ body {
     display: none !important;
 }
 
+/* Header */
+.header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.title {
+    font-size: 1.5rem;
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #000000;
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    font-size: 0.875rem;
+    color: #666666;
+    font-weight: 300;
+}
+
 /* Game Over Screen */
 .game-over-screen {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-bottom: 3rem;
+    margin-bottom: 4rem;
 }
 
 .winner-card {
     background: #ffffff;
-    border-radius: 12px;
+    border: 1px solid #e5e5e5;
     padding: 3rem;
-    text-align: center;
-    max-width: 500px;
+    max-width: 32rem;
     width: 100%;
-    box-shadow: 0 4px 20px rgba(28, 41, 48, 0.08);
+    text-align: center;
 }
 
 .winner-title {
-    font-family: 'Cardo', serif;
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: #1c2930;
+    font-size: 1.25rem;
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #000000;
     margin-bottom: 2rem;
 }
 
+.winner-image-container {
+    aspect-ratio: 1;
+    background: #fafafa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e5e5e5;
+    margin-bottom: 2rem;
+    max-width: 20rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 .winner-emoji {
-    font-size: 12rem;
+    font-size: 8rem;
     line-height: 1;
-    margin-bottom: 1.5rem;
+}
+
+.winner-info {
+    margin-bottom: 2rem;
 }
 
 .winner-name {
-    font-family: 'Cardo', serif;
-    font-size: 2rem;
-    font-weight: 700;
-    color: #1c2930;
+    font-size: 1.5rem;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #000000;
     margin-bottom: 0.5rem;
 }
 
 .winner-designer {
-    font-size: 1.2rem;
-    color: #6b7280;
-    margin-bottom: 2rem;
+    font-size: 1rem;
+    color: #666666;
+    font-weight: 300;
+    margin-bottom: 0.5rem;
+}
+
+.winner-materials {
+    font-size: 0.875rem;
+    color: #888888;
+    font-weight: 300;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
 }
 
 .winner-details {
-    background: #f8fafc;
-    border-radius: 8px;
-    padding: 1.5rem;
+    border-top: 1px solid #e5e5e5;
+    padding-top: 1.5rem;
     margin-bottom: 2rem;
-    text-align: left;
 }
 
-.details-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #1c2930;
+.winner-description {
+    font-size: 0.875rem;
+    color: #333333;
+    font-weight: 300;
+    line-height: 1.6;
     margin-bottom: 1rem;
 }
 
-.details-materials,
-.details-description {
-    font-size: 0.9rem;
-    color: #6b7280;
-    margin-bottom: 1rem;
-}
-
-.details-materials strong {
-    color: #1c2930;
-}
-
-.details-description strong {
-    color: #1c2930;
-}
-
-.details-link {
+.winner-link {
     display: inline-block;
-    background: #98bae3;
-    color: #1c2930;
-    padding: 0.75rem 1.5rem;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 0.9rem;
-    transition: all 0.3s ease;
+    color: #000000;
+    text-decoration: underline;
+    font-size: 0.75rem;
+    font-weight: 300;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 1.5rem;
 }
 
-.details-link:hover {
-    background: #7aa8d8;
-    transform: translateY(-1px);
+.winner-link:hover {
+    text-decoration: none;
 }
 
 .reset-button {
-    background: #1c2930;
-    color: #ffffff;
-    border: none;
-    padding: 1rem 2rem;
-    border-radius: 8px;
+    color: #000000;
+    background: transparent;
+    border: 1px solid #000000;
+    padding: 0.75rem 1.5rem;
     font-family: 'Inter', sans-serif;
-    font-size: 1rem;
-    font-weight: 600;
+    font-size: 0.75rem;
+    font-weight: 300;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
 .reset-button:hover {
-    background: #2d3748;
-    transform: translateY(-1px);
+    background: #000000;
+    color: #ffffff;
 }
 
 /* Game Board */
@@ -163,187 +172,131 @@ body {
 }
 
 .battle-container {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    display: flex;
     gap: 2rem;
-    align-items: start;
-    margin-bottom: 3rem;
+    align-items: flex-start;
+    margin-bottom: 2rem;
 }
 
-.competitor-section {
+.option-section {
+    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 1rem;
 }
 
-.competitor-label {
+.option-label {
     text-align: center;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
 }
 
 .label-text {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #ffffff;
-}
-
-.defender-label .label-text {
-    background: #98bae3;
-}
-
-.challenger-label .label-text {
-    background: #6b7280;
+    font-size: 0.75rem;
+    color: #888888;
+    font-weight: 300;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
 }
 
 /* Furniture Cards */
 .furniture-card {
     background: #ffffff;
-    border-radius: 12px;
-    padding: 2rem;
-    text-align: center;
+    border: 1px solid #e5e5e5;
     cursor: pointer;
-    transition: all 0.4s ease;
-    position: relative;
+    transition: all 0.3s ease;
     height: 100%;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 2px 10px rgba(28, 41, 48, 0.06);
 }
 
 .furniture-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 25px rgba(28, 41, 48, 0.12);
+    border-color: #cccccc;
 }
 
 .furniture-card.locked {
+    cursor: default;
     opacity: 0.6;
-    cursor: not-allowed;
-    filter: grayscale(0.3);
 }
 
 .furniture-card.chosen {
-    transform: translateY(-4px) scale(1.02);
-    box-shadow: 0 8px 25px rgba(152, 186, 227, 0.3);
-    background: #f8fafc;
+    border-color: #000000;
+    background: #fafafa;
 }
 
 .furniture-card.not-chosen {
-    transform: scale(0.98);
     opacity: 0.5;
-    filter: grayscale(0.8);
+}
+
+.card-image-container {
+    height: 16rem;
+    background: #fafafa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid #e5e5e5;
 }
 
 .card-emoji {
-    font-size: 8rem;
+    font-size: 6rem;
     line-height: 1;
-    margin-bottom: 1.5rem;
-    flex-shrink: 0;
 }
 
 .card-content {
+    padding: 1rem;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 }
 
+.card-info {
+    margin-bottom: 0.75rem;
+}
+
 .card-title {
-    font-family: 'Cardo', serif;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #1c2930;
-    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #000000;
+    margin-bottom: 0.25rem;
 }
 
 .card-designer {
-    font-size: 0.9rem;
-    color: #6b7280;
-    margin-bottom: 0.5rem;
+    font-size: 0.75rem;
+    color: #666666;
+    font-weight: 300;
+    margin-bottom: 0.25rem;
 }
 
 .card-materials {
-    font-size: 0.8rem;
-    color: #9ca3af;
-    margin-bottom: 1rem;
+    font-size: 0.75rem;
+    color: #888888;
+    font-weight: 300;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
 }
 
 .card-description {
-    font-size: 0.9rem;
-    color: #4b5563;
-    margin-bottom: 1.5rem;
-    line-height: 1.5;
+    font-size: 0.75rem;
+    color: #333333;
+    font-weight: 300;
+    line-height: 1.6;
+    margin-bottom: 0.75rem;
 }
 
 .card-link {
-    color: #98bae3;
-    text-decoration: none;
-    font-size: 0.8rem;
-    font-weight: 500;
-    transition: color 0.3s ease;
+    color: #000000;
+    text-decoration: underline;
+    font-size: 0.75rem;
+    font-weight: 300;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
     margin-top: auto;
 }
 
 .card-link:hover {
-    color: #7aa8d8;
-}
-
-.choice-indicator {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: #98bae3;
-    color: #ffffff;
-    border-radius: 50%;
-    width: 2.5rem;
-    height: 2.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    font-weight: bold;
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { 
-        transform: scale(1);
-        opacity: 1;
-    }
-    50% { 
-        transform: scale(1.1);
-        opacity: 0.8;
-    }
-}
-
-/* Countdown Overlay */
-.countdown-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(28, 41, 48, 0.1);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.countdown-circle {
-    background: #ffffff;
-    border-radius: 50%;
-    width: 4rem;
-    height: 4rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 15px rgba(28, 41, 48, 0.15);
-}
-
-.countdown-number {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #1c2930;
+    text-decoration: none;
 }
 
 /* VS Divider */
@@ -352,22 +305,26 @@ body {
     align-items: center;
     justify-content: center;
     margin: 0 1rem;
+    padding-top: 2rem;
 }
 
 .vs-badge {
-    background: #1c2930;
-    color: #ffffff;
-    padding: 0.75rem 1rem;
-    border-radius: 20px;
-    font-weight: 700;
-    font-size: 1rem;
-    box-shadow: 0 2px 10px rgba(28, 41, 48, 0.15);
+    background: #ffffff;
+    color: #cccccc;
+    border: 1px solid #e5e5e5;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 300;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-align: center;
     transition: all 0.3s ease;
 }
 
 .vs-badge.countdown {
-    background: #f59e0b;
-    animation: pulse 1s infinite;
+    background: #000000;
+    color: #ffffff;
+    border-color: #000000;
 }
 
 /* Poll Results */
@@ -376,16 +333,15 @@ body {
 }
 
 .poll-content {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 1rem;
+    border: 1px solid #e5e5e5;
+    background: #ffffff;
+    padding: 0.75rem;
     transition: all 0.3s ease;
 }
 
 .poll-content.chosen {
-    border-color: #98bae3;
-    background: #f0f7ff;
+    border-color: #000000;
+    background: #fafafa;
 }
 
 .poll-header {
@@ -396,79 +352,89 @@ body {
 }
 
 .poll-label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #4b5563;
+    font-size: 0.75rem;
+    font-weight: 300;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #333333;
 }
 
 .poll-label.chosen {
-    color: #98bae3;
+    color: #000000;
 }
 
 .poll-percentage {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #1c2930;
+    font-size: 0.875rem;
+    font-weight: 300;
+    color: #000000;
 }
 
 .poll-bar {
     width: 100%;
-    height: 8px;
-    background: #e2e8f0;
-    border-radius: 4px;
+    height: 0.25rem;
+    background: #e5e5e5;
+    margin-bottom: 0.25rem;
     overflow: hidden;
-    margin-bottom: 0.5rem;
 }
 
 .poll-fill {
     height: 100%;
-    background: #d1d5db;
-    border-radius: 4px;
+    background: #cccccc;
     transition: width 1s ease-in-out;
 }
 
 .poll-fill.chosen {
-    background: #98bae3;
+    background: #000000;
 }
 
 .poll-description {
     font-size: 0.75rem;
-    color: #6b7280;
+    color: #666666;
+    font-weight: 300;
     text-align: center;
 }
 
-/* Next Round Section */
-.next-round-section {
+/* Controls */
+.controls {
     text-align: center;
-    margin-top: 3rem;
+    margin-bottom: 1.5rem;
 }
 
-.next-round-button {
-    background: #1c2930;
-    color: #ffffff;
-    border: none;
-    padding: 1rem 2rem;
-    border-radius: 8px;
+.continue-button {
+    color: #000000;
+    background: transparent;
+    border: 1px solid #000000;
+    padding: 0.75rem 1.5rem;
     font-family: 'Inter', sans-serif;
-    font-size: 1rem;
-    font-weight: 600;
+    font-size: 0.75rem;
+    font-weight: 300;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(28, 41, 48, 0.15);
 }
 
-.next-round-button:hover {
-    background: #2d3748;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(28, 41, 48, 0.2);
+.continue-button:hover {
+    background: #000000;
+    color: #ffffff;
+}
+
+.selection-prompt {
+    font-size: 0.75rem;
+    color: #888888;
+    font-weight: 300;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
 }
 
 /* Round Counter */
 .round-counter {
     text-align: center;
-    font-size: 1rem;
-    color: #6b7280;
-    font-weight: 500;
+    font-size: 0.75rem;
+    color: #cccccc;
+    font-weight: 300;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
 }
 
 /* Responsive Design */
@@ -478,45 +444,46 @@ body {
     }
     
     .title {
-        font-size: 2.5rem;
+        font-size: 1.25rem;
     }
     
     .battle-container {
-        grid-template-columns: 1fr;
-        gap: 2rem;
+        flex-direction: column;
+        gap: 1.5rem;
     }
     
     .vs-divider {
         order: 1;
         margin: 1rem 0;
+        padding-top: 0;
     }
     
-    .competitor-section:first-child {
+    .option-section:first-child {
         order: 0;
     }
     
-    .competitor-section:last-child {
+    .option-section:last-child {
         order: 2;
     }
     
+    .card-image-container {
+        height: 12rem;
+    }
+    
     .card-emoji {
-        font-size: 6rem;
+        font-size: 4rem;
     }
     
     .winner-emoji {
-        font-size: 8rem;
+        font-size: 6rem;
     }
     
     .winner-card {
         padding: 2rem;
     }
     
-    .winner-title {
-        font-size: 2rem;
-    }
-    
     .winner-name {
-        font-size: 1.5rem;
+        font-size: 1.25rem;
     }
 }
 
@@ -526,38 +493,34 @@ body {
     }
     
     .title {
-        font-size: 2rem;
-    }
-    
-    .subtitle {
         font-size: 1rem;
     }
     
-    .furniture-card {
-        padding: 1.5rem;
+    .subtitle {
+        font-size: 0.8rem;
+    }
+    
+    .card-image-container {
+        height: 10rem;
     }
     
     .card-emoji {
-        font-size: 5rem;
-    }
-    
-    .card-title {
-        font-size: 1.2rem;
+        font-size: 3rem;
     }
     
     .winner-emoji {
-        font-size: 6rem;
+        font-size: 4rem;
     }
     
     .winner-card {
         padding: 1.5rem;
     }
     
-    .winner-title {
-        font-size: 1.5rem;
+    .winner-name {
+        font-size: 1rem;
     }
     
-    .winner-name {
-        font-size: 1.2rem;
+    .winner-title {
+        font-size: 1rem;
     }
 }

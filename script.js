@@ -201,8 +201,6 @@ let gameState = {
     round: 1,
     gameOver: false,
     winner: null,
-    score: { left: 0, right: 0 },
-    isChoosing: false,
     chosenItem: null,
     isLocked: true,
     countdown: 5,
@@ -218,8 +216,8 @@ const elements = {
     leftCard: document.getElementById('leftCard'),
     rightCard: document.getElementById('rightCard'),
     vsBadge: document.getElementById('vsBadge'),
-    nextRoundSection: document.getElementById('nextRoundSection'),
-    nextRoundButton: document.getElementById('nextRoundButton'),
+    continueButton: document.getElementById('continueButton'),
+    selectionPrompt: document.getElementById('selectionPrompt'),
     resetButton: document.getElementById('resetButton'),
     roundNumber: document.getElementById('roundNumber'),
     
@@ -230,8 +228,6 @@ const elements = {
     leftMaterials: document.getElementById('leftMaterials'),
     leftDescription: document.getElementById('leftDescription'),
     leftLink: document.getElementById('leftLink'),
-    leftIndicator: document.getElementById('leftIndicator'),
-    leftCountdown: document.getElementById('leftCountdown'),
     leftPollResults: document.getElementById('leftPollResults'),
     leftPollLabel: document.getElementById('leftPollLabel'),
     leftPollPercentage: document.getElementById('leftPollPercentage'),
@@ -245,8 +241,6 @@ const elements = {
     rightMaterials: document.getElementById('rightMaterials'),
     rightDescription: document.getElementById('rightDescription'),
     rightLink: document.getElementById('rightLink'),
-    rightIndicator: document.getElementById('rightIndicator'),
-    rightCountdown: document.getElementById('rightCountdown'),
     rightPollResults: document.getElementById('rightPollResults'),
     rightPollLabel: document.getElementById('rightPollLabel'),
     rightPollPercentage: document.getElementById('rightPollPercentage'),
@@ -259,10 +253,7 @@ const elements = {
     winnerDesigner: document.getElementById('winnerDesigner'),
     winnerMaterials: document.getElementById('winnerMaterials'),
     winnerDescription: document.getElementById('winnerDescription'),
-    winnerLink: document.getElementById('winnerLink'),
-    
-    // Countdown elements
-    countdownNumbers: document.querySelectorAll('.countdown-number')
+    winnerLink: document.getElementById('winnerLink')
 };
 
 // Initialize game
@@ -276,8 +267,6 @@ function initializeGame() {
     gameState.round = 1;
     gameState.gameOver = false;
     gameState.winner = null;
-    gameState.score = { left: 0, right: 0 };
-    gameState.isChoosing = false;
     gameState.chosenItem = null;
     gameState.isLocked = true;
     gameState.countdown = 5;
@@ -308,20 +297,26 @@ function updateDisplay() {
         elements.vsBadge.textContent = gameState.countdown;
         elements.vsBadge.classList.add('countdown');
     } else {
-        elements.vsBadge.textContent = 'VS';
+        elements.vsBadge.textContent = 'vs';
         elements.vsBadge.classList.remove('countdown');
     }
     
     // Update card states
     updateCardStates();
     
-    // Show/hide poll results
+    // Show/hide controls and poll results
     if (gameState.showResults) {
         showPollResults();
-        elements.nextRoundSection.classList.remove('hidden');
+        elements.continueButton.classList.remove('hidden');
+        elements.selectionPrompt.classList.add('hidden');
     } else {
         hidePollResults();
-        elements.nextRoundSection.classList.add('hidden');
+        elements.continueButton.classList.add('hidden');
+        if (!gameState.isLocked) {
+            elements.selectionPrompt.classList.remove('hidden');
+        } else {
+            elements.selectionPrompt.classList.add('hidden');
+        }
     }
     
     // Show/hide game screens
@@ -335,7 +330,7 @@ function updateCard(side, item) {
     
     elements[`${prefix}Emoji`].textContent = item.image;
     elements[`${prefix}Title`].textContent = item.name;
-    elements[`${prefix}Designer`].textContent = `by ${item.designer}`;
+    elements[`${prefix}Designer`].textContent = item.designer;
     elements[`${prefix}Materials`].textContent = item.materials;
     elements[`${prefix}Description`].textContent = item.description;
     elements[`${prefix}Link`].href = item.link;
@@ -354,28 +349,16 @@ function updateCardStates() {
     if (gameState.isLocked) {
         leftCard.classList.add('locked');
         rightCard.classList.add('locked');
-        elements.leftCountdown.classList.remove('hidden');
-        elements.rightCountdown.classList.remove('hidden');
-    } else {
-        elements.leftCountdown.classList.add('hidden');
-        elements.rightCountdown.classList.add('hidden');
     }
     
     if (gameState.chosenItem) {
         if (gameState.chosenItem === gameState.currentPair[0]) {
             leftCard.classList.add('chosen');
             rightCard.classList.add('not-chosen');
-            elements.leftIndicator.classList.remove('hidden');
-            elements.rightIndicator.classList.add('hidden');
         } else {
             rightCard.classList.add('chosen');
             leftCard.classList.add('not-chosen');
-            elements.rightIndicator.classList.remove('hidden');
-            elements.leftIndicator.classList.add('hidden');
         }
-    } else {
-        elements.leftIndicator.classList.add('hidden');
-        elements.rightIndicator.classList.add('hidden');
     }
 }
 
@@ -402,27 +385,22 @@ function startCountdown() {
 
 // Update countdown display
 function updateCountdownDisplay() {
-    elements.countdownNumbers.forEach(el => {
-        el.textContent = gameState.countdown;
-    });
-    
     if (gameState.isLocked) {
         elements.vsBadge.textContent = gameState.countdown;
         elements.vsBadge.classList.add('countdown');
     } else {
-        elements.vsBadge.textContent = 'VS';
+        elements.vsBadge.textContent = 'vs';
         elements.vsBadge.classList.remove('countdown');
     }
 }
 
 // Handle choice
 function handleChoice(chosenItem) {
-    if (gameState.gameOver || gameState.isChoosing || gameState.isLocked || gameState.showResults) {
+    if (gameState.gameOver || gameState.isLocked || gameState.showResults) {
         return;
     }
     
     gameState.chosenItem = chosenItem;
-    gameState.isChoosing = true;
     
     // Generate random poll percentages
     const chosenPercentage = Math.floor(Math.random() * 40) + 50; // 50-90%
@@ -434,12 +412,7 @@ function handleChoice(chosenItem) {
         right: isLeftChoice ? otherPercentage : chosenPercentage
     };
     
-    // Update score
-    gameState.score.left += isLeftChoice ? 1 : 0;
-    gameState.score.right += isLeftChoice ? 0 : 1;
-    
     gameState.showResults = true;
-    gameState.isChoosing = false;
     
     updateDisplay();
 }
@@ -454,24 +427,24 @@ function showPollResults() {
     
     // Update left poll
     const leftChosen = gameState.chosenItem === gameState.currentPair[0];
-    elements.leftPollLabel.textContent = leftChosen ? '✓ Your choice' : 'Not chosen';
+    elements.leftPollLabel.textContent = leftChosen ? 'Your Choice' : 'Not Selected';
     elements.leftPollLabel.classList.toggle('chosen', leftChosen);
     elements.leftPollPercentage.textContent = `${gameState.pollResults.left}%`;
     elements.leftPollFill.style.width = `${gameState.pollResults.left}%`;
     elements.leftPollFill.classList.toggle('chosen', leftChosen);
-    elements.leftPollDescription.textContent = `${gameState.pollResults.left}% of users chose this option`;
+    elements.leftPollDescription.textContent = `${gameState.pollResults.left}% chose this`;
     
     const leftContent = leftResults.querySelector('.poll-content');
     leftContent.classList.toggle('chosen', leftChosen);
     
     // Update right poll
     const rightChosen = gameState.chosenItem === gameState.currentPair[1];
-    elements.rightPollLabel.textContent = rightChosen ? '✓ Your choice' : 'Not chosen';
+    elements.rightPollLabel.textContent = rightChosen ? 'Your Choice' : 'Not Selected';
     elements.rightPollLabel.classList.toggle('chosen', rightChosen);
     elements.rightPollPercentage.textContent = `${gameState.pollResults.right}%`;
     elements.rightPollFill.style.width = `${gameState.pollResults.right}%`;
     elements.rightPollFill.classList.toggle('chosen', rightChosen);
-    elements.rightPollDescription.textContent = `${gameState.pollResults.right}% of users chose this option`;
+    elements.rightPollDescription.textContent = `${gameState.pollResults.right}% chose this`;
     
     const rightContent = rightResults.querySelector('.poll-content');
     rightContent.classList.toggle('chosen', rightChosen);
@@ -526,9 +499,9 @@ function showGameOverScreen() {
     // Update winner information
     elements.winnerEmoji.textContent = gameState.winner.image;
     elements.winnerName.textContent = gameState.winner.name;
-    elements.winnerDesigner.textContent = `by ${gameState.winner.designer}`;
-    elements.winnerMaterials.innerHTML = `<strong>Materials:</strong> ${gameState.winner.materials}`;
-    elements.winnerDescription.innerHTML = `<strong>Description:</strong> ${gameState.winner.description}`;
+    elements.winnerDesigner.textContent = gameState.winner.designer;
+    elements.winnerMaterials.textContent = gameState.winner.materials;
+    elements.winnerDescription.textContent = gameState.winner.description;
     elements.winnerLink.href = gameState.winner.link;
 }
 
@@ -543,7 +516,7 @@ function resetGame() {
 // Event listeners
 elements.leftCard.addEventListener('click', () => handleChoice(gameState.currentPair[0]));
 elements.rightCard.addEventListener('click', () => handleChoice(gameState.currentPair[1]));
-elements.nextRoundButton.addEventListener('click', moveToNextRound);
+elements.continueButton.addEventListener('click', moveToNextRound);
 elements.resetButton.addEventListener('click', resetGame);
 
 // Prevent link clicks from triggering card selection
