@@ -203,10 +203,10 @@ let gameState = {
     winner: null,
     chosenItem: null,
     isLocked: true,
-    countdown: 5,
+    ponderTime: 3,
     showResults: false,
     pollResults: { left: 0, right: 0 },
-    countdownTimer: null
+    ponderTimer: null
 };
 
 // DOM elements
@@ -253,7 +253,10 @@ const elements = {
     winnerDesigner: document.getElementById('winnerDesigner'),
     winnerMaterials: document.getElementById('winnerMaterials'),
     winnerDescription: document.getElementById('winnerDescription'),
-    winnerLink: document.getElementById('winnerLink')
+    winnerLink: document.getElementById('winnerLink'),
+    
+    // Ponder message
+    ponderMessage: document.getElementById('ponderMessage')
 };
 
 // Initialize game
@@ -269,13 +272,13 @@ function initializeGame() {
     gameState.winner = null;
     gameState.chosenItem = null;
     gameState.isLocked = true;
-    gameState.countdown = 5;
+    gameState.ponderTime = 3;
     gameState.showResults = false;
     gameState.pollResults = { left: 0, right: 0 };
     
     // Update UI
     updateDisplay();
-    startCountdown();
+    startPonderTime();
 }
 
 // Update display
@@ -292,14 +295,9 @@ function updateDisplay() {
     updateCard('left', gameState.currentPair[0]);
     updateCard('right', gameState.currentPair[1]);
     
-    // Update VS badge
-    if (gameState.isLocked) {
-        elements.vsBadge.textContent = gameState.countdown;
-        elements.vsBadge.classList.add('countdown');
-    } else {
-        elements.vsBadge.textContent = 'vs';
-        elements.vsBadge.classList.remove('countdown');
-    }
+    // Update VS badge - always show 'vs'
+    elements.vsBadge.textContent = 'vs';
+    elements.vsBadge.classList.remove('countdown');
     
     // Update card states
     updateCardStates();
@@ -307,15 +305,15 @@ function updateDisplay() {
     // Show/hide controls and poll results
     if (gameState.showResults) {
         showPollResults();
-        elements.continueButton.classList.remove('hidden');
-        elements.selectionPrompt.classList.add('hidden');
+        showContinueButton();
+        hideSelectionPrompt();
     } else {
         hidePollResults();
-        elements.continueButton.classList.add('hidden');
+        hideContinueButton();
         if (!gameState.isLocked) {
-            elements.selectionPrompt.classList.remove('hidden');
+            showSelectionPrompt();
         } else {
-            elements.selectionPrompt.classList.add('hidden');
+            hideSelectionPrompt();
         }
     }
     
@@ -341,17 +339,32 @@ function updateCardStates() {
     const leftCard = elements.leftCard;
     const rightCard = elements.rightCard;
     
-    // Reset classes
-    leftCard.classList.remove('locked', 'chosen', 'not-chosen');
-    rightCard.classList.remove('locked', 'chosen', 'not-chosen');
+    // Only update if state actually changed to avoid flicker
+    const isCurrentlyLocked = leftCard.classList.contains('locked');
     
-    // Apply states
-    if (gameState.isLocked) {
+    if (gameState.isLocked && !isCurrentlyLocked) {
+        // Locking cards
+        leftCard.classList.remove('active');
+        rightCard.classList.remove('active');
         leftCard.classList.add('locked');
         rightCard.classList.add('locked');
+    } else if (!gameState.isLocked && isCurrentlyLocked) {
+        // Unlocking cards - smooth transition
+        leftCard.classList.remove('locked');
+        rightCard.classList.remove('locked');
+        
+        // Add active class with slight delay for smooth transition
+        setTimeout(() => {
+            leftCard.classList.add('active');
+            rightCard.classList.add('active');
+        }, 50);
     }
     
+    // Handle choice states
     if (gameState.chosenItem) {
+        leftCard.classList.remove('chosen', 'not-chosen');
+        rightCard.classList.remove('chosen', 'not-chosen');
+        
         if (gameState.chosenItem === gameState.currentPair[0]) {
             leftCard.classList.add('chosen');
             rightCard.classList.add('not-chosen');
@@ -359,39 +372,37 @@ function updateCardStates() {
             rightCard.classList.add('chosen');
             leftCard.classList.add('not-chosen');
         }
-    }
-}
-
-// Start countdown
-function startCountdown() {
-    if (gameState.countdownTimer) {
-        clearInterval(gameState.countdownTimer);
-    }
-    
-    gameState.countdown = 5;
-    updateCountdownDisplay();
-    
-    gameState.countdownTimer = setInterval(() => {
-        gameState.countdown--;
-        updateCountdownDisplay();
-        
-        if (gameState.countdown <= 0) {
-            clearInterval(gameState.countdownTimer);
-            gameState.isLocked = false;
-            updateDisplay();
-        }
-    }, 1000);
-}
-
-// Update countdown display
-function updateCountdownDisplay() {
-    if (gameState.isLocked) {
-        elements.vsBadge.textContent = gameState.countdown;
-        elements.vsBadge.classList.add('countdown');
     } else {
-        elements.vsBadge.textContent = 'vs';
-        elements.vsBadge.classList.remove('countdown');
+        // Clear choice states
+        leftCard.classList.remove('chosen', 'not-chosen');
+        rightCard.classList.remove('chosen', 'not-chosen');
     }
+}
+
+// Start ponder time
+function startPonderTime() {
+    if (gameState.ponderTimer) {
+        clearTimeout(gameState.ponderTimer);
+    }
+    
+    // Show ponder message
+    elements.ponderMessage.classList.remove('hidden');
+    elements.ponderMessage.classList.add('show');
+    
+    // Hide message and unlock after 3 seconds
+    gameState.ponderTimer = setTimeout(() => {
+        elements.ponderMessage.classList.remove('show');
+        
+        // Wait for fade out animation, then hide and unlock
+        setTimeout(() => {
+            elements.ponderMessage.classList.add('hidden');
+            gameState.isLocked = false;
+            
+            // Instead of full updateDisplay(), just update what's needed
+            updateCardStates();
+            showSelectionPrompt();
+        }, 800); // Match CSS transition duration
+    }, 3000);
 }
 
 // Handle choice
@@ -425,6 +436,12 @@ function showPollResults() {
     leftResults.classList.remove('hidden');
     rightResults.classList.remove('hidden');
     
+    // Add show class for fade animation
+    setTimeout(() => {
+        leftResults.classList.add('show');
+        rightResults.classList.add('show');
+    }, 50);
+    
     // Update left poll
     const leftChosen = gameState.chosenItem === gameState.currentPair[0];
     elements.leftPollLabel.textContent = leftChosen ? 'Your Choice' : 'Not Selected';
@@ -452,8 +469,45 @@ function showPollResults() {
 
 // Hide poll results
 function hidePollResults() {
-    elements.leftPollResults.classList.add('hidden');
-    elements.rightPollResults.classList.add('hidden');
+    elements.leftPollResults.classList.remove('show');
+    elements.rightPollResults.classList.remove('show');
+    
+    setTimeout(() => {
+        elements.leftPollResults.classList.add('hidden');
+        elements.rightPollResults.classList.add('hidden');
+    }, 400);
+}
+
+// Show continue button with animation
+function showContinueButton() {
+    elements.continueButton.classList.remove('hidden');
+    setTimeout(() => {
+        elements.continueButton.classList.add('show');
+    }, 50);
+}
+
+// Hide continue button
+function hideContinueButton() {
+    elements.continueButton.classList.remove('show');
+    setTimeout(() => {
+        elements.continueButton.classList.add('hidden');
+    }, 300);
+}
+
+// Show selection prompt with animation
+function showSelectionPrompt() {
+    elements.selectionPrompt.classList.remove('hidden');
+    setTimeout(() => {
+        elements.selectionPrompt.classList.add('show');
+    }, 50);
+}
+
+// Hide selection prompt
+function hideSelectionPrompt() {
+    elements.selectionPrompt.classList.remove('show');
+    setTimeout(() => {
+        elements.selectionPrompt.classList.add('hidden');
+    }, 300);
 }
 
 // Move to next round
@@ -485,10 +539,10 @@ function moveToNextRound() {
     gameState.chosenItem = null;
     gameState.showResults = false;
     gameState.isLocked = true;
-    gameState.countdown = 5;
+    gameState.ponderTime = 3;
     
     updateDisplay();
-    startCountdown();
+    startPonderTime();
 }
 
 // Show game over screen
@@ -507,8 +561,8 @@ function showGameOverScreen() {
 
 // Reset game
 function resetGame() {
-    if (gameState.countdownTimer) {
-        clearInterval(gameState.countdownTimer);
+    if (gameState.ponderTimer) {
+        clearTimeout(gameState.ponderTimer);
     }
     initializeGame();
 }
