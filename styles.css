@@ -1,0 +1,563 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #e9eff4;
+    color: #1c2930;
+    line-height: 1.6;
+    min-height: 100vh;
+    font-weight: 400;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* Typography */
+.title {
+    font-family: 'Cardo', serif;
+    font-size: 3rem;
+    font-weight: 700;
+    color: #1c2930;
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    font-size: 1.1rem;
+    color: #6b7280;
+    font-weight: 300;
+}
+
+/* Header */
+.header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+/* Hidden utility class */
+.hidden {
+    display: none !important;
+}
+
+/* Game Over Screen */
+.game-over-screen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 3rem;
+}
+
+.winner-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 3rem;
+    text-align: center;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 0 4px 20px rgba(28, 41, 48, 0.08);
+}
+
+.winner-title {
+    font-family: 'Cardo', serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1c2930;
+    margin-bottom: 2rem;
+}
+
+.winner-emoji {
+    font-size: 12rem;
+    line-height: 1;
+    margin-bottom: 1.5rem;
+}
+
+.winner-name {
+    font-family: 'Cardo', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1c2930;
+    margin-bottom: 0.5rem;
+}
+
+.winner-designer {
+    font-size: 1.2rem;
+    color: #6b7280;
+    margin-bottom: 2rem;
+}
+
+.winner-details {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    text-align: left;
+}
+
+.details-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1c2930;
+    margin-bottom: 1rem;
+}
+
+.details-materials,
+.details-description {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin-bottom: 1rem;
+}
+
+.details-materials strong {
+    color: #1c2930;
+}
+
+.details-description strong {
+    color: #1c2930;
+}
+
+.details-link {
+    display: inline-block;
+    background: #98bae3;
+    color: #1c2930;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.details-link:hover {
+    background: #7aa8d8;
+    transform: translateY(-1px);
+}
+
+.reset-button {
+    background: #1c2930;
+    color: #ffffff;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.reset-button:hover {
+    background: #2d3748;
+    transform: translateY(-1px);
+}
+
+/* Game Board */
+.game-board {
+    margin-bottom: 3rem;
+}
+
+.battle-container {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 2rem;
+    align-items: start;
+    margin-bottom: 3rem;
+}
+
+.competitor-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.competitor-label {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.label-text {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.defender-label .label-text {
+    background: #98bae3;
+}
+
+.challenger-label .label-text {
+    background: #6b7280;
+}
+
+/* Furniture Cards */
+.furniture-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 10px rgba(28, 41, 48, 0.06);
+}
+
+.furniture-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(28, 41, 48, 0.12);
+}
+
+.furniture-card.locked {
+    opacity: 0.6;
+    cursor: not-allowed;
+    filter: grayscale(0.3);
+}
+
+.furniture-card.chosen {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(152, 186, 227, 0.3);
+    background: #f8fafc;
+}
+
+.furniture-card.not-chosen {
+    transform: scale(0.98);
+    opacity: 0.5;
+    filter: grayscale(0.8);
+}
+
+.card-emoji {
+    font-size: 8rem;
+    line-height: 1;
+    margin-bottom: 1.5rem;
+    flex-shrink: 0;
+}
+
+.card-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.card-title {
+    font-family: 'Cardo', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1c2930;
+    margin-bottom: 0.5rem;
+}
+
+.card-designer {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+}
+
+.card-materials {
+    font-size: 0.8rem;
+    color: #9ca3af;
+    margin-bottom: 1rem;
+}
+
+.card-description {
+    font-size: 0.9rem;
+    color: #4b5563;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+.card-link {
+    color: #98bae3;
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: color 0.3s ease;
+    margin-top: auto;
+}
+
+.card-link:hover {
+    color: #7aa8d8;
+}
+
+.choice-indicator {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: #98bae3;
+    color: #ffffff;
+    border-radius: 50%;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { 
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% { 
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
+}
+
+/* Countdown Overlay */
+.countdown-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(28, 41, 48, 0.1);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.countdown-circle {
+    background: #ffffff;
+    border-radius: 50%;
+    width: 4rem;
+    height: 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(28, 41, 48, 0.15);
+}
+
+.countdown-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1c2930;
+}
+
+/* VS Divider */
+.vs-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 1rem;
+}
+
+.vs-badge {
+    background: #1c2930;
+    color: #ffffff;
+    padding: 0.75rem 1rem;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 1rem;
+    box-shadow: 0 2px 10px rgba(28, 41, 48, 0.15);
+    transition: all 0.3s ease;
+}
+
+.vs-badge.countdown {
+    background: #f59e0b;
+    animation: pulse 1s infinite;
+}
+
+/* Poll Results */
+.poll-results {
+    margin-top: 1rem;
+}
+
+.poll-content {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1rem;
+    transition: all 0.3s ease;
+}
+
+.poll-content.chosen {
+    border-color: #98bae3;
+    background: #f0f7ff;
+}
+
+.poll-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.poll-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #4b5563;
+}
+
+.poll-label.chosen {
+    color: #98bae3;
+}
+
+.poll-percentage {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1c2930;
+}
+
+.poll-bar {
+    width: 100%;
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.poll-fill {
+    height: 100%;
+    background: #d1d5db;
+    border-radius: 4px;
+    transition: width 1s ease-in-out;
+}
+
+.poll-fill.chosen {
+    background: #98bae3;
+}
+
+.poll-description {
+    font-size: 0.75rem;
+    color: #6b7280;
+    text-align: center;
+}
+
+/* Next Round Section */
+.next-round-section {
+    text-align: center;
+    margin-top: 3rem;
+}
+
+.next-round-button {
+    background: #1c2930;
+    color: #ffffff;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(28, 41, 48, 0.15);
+}
+
+.next-round-button:hover {
+    background: #2d3748;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(28, 41, 48, 0.2);
+}
+
+/* Round Counter */
+.round-counter {
+    text-align: center;
+    font-size: 1rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 800px) {
+    .container {
+        padding: 1.5rem;
+    }
+    
+    .title {
+        font-size: 2.5rem;
+    }
+    
+    .battle-container {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .vs-divider {
+        order: 1;
+        margin: 1rem 0;
+    }
+    
+    .competitor-section:first-child {
+        order: 0;
+    }
+    
+    .competitor-section:last-child {
+        order: 2;
+    }
+    
+    .card-emoji {
+        font-size: 6rem;
+    }
+    
+    .winner-emoji {
+        font-size: 8rem;
+    }
+    
+    .winner-card {
+        padding: 2rem;
+    }
+    
+    .winner-title {
+        font-size: 2rem;
+    }
+    
+    .winner-name {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .container {
+        padding: 1rem;
+    }
+    
+    .title {
+        font-size: 2rem;
+    }
+    
+    .subtitle {
+        font-size: 1rem;
+    }
+    
+    .furniture-card {
+        padding: 1.5rem;
+    }
+    
+    .card-emoji {
+        font-size: 5rem;
+    }
+    
+    .card-title {
+        font-size: 1.2rem;
+    }
+    
+    .winner-emoji {
+        font-size: 6rem;
+    }
+    
+    .winner-card {
+        padding: 1.5rem;
+    }
+    
+    .winner-title {
+        font-size: 1.5rem;
+    }
+    
+    .winner-name {
+        font-size: 1.2rem;
+    }
+}

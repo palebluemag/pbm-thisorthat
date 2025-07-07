@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Furniture Showdown</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cardo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="title">Furniture Showdown</h1>
+            <p class="subtitle">Choose your favorite design piece</p>
+        </header>
+
+        <!-- Game Over Screen -->
+        <div id="gameOverScreen" class="game-over-screen hidden">
+            <div class="winner-card">
+                <h2 class="winner-title">Ultimate Champion</h2>
+                <div class="winner-emoji" id="winnerEmoji"></div>
+                <h3 class="winner-name" id="winnerName"></h3>
+                <p class="winner-designer" id="winnerDesigner"></p>
+                <div class="winner-details">
+                    <h4 class="details-title">Design Details</h4>
+                    <p class="details-materials" id="winnerMaterials"></p>
+                    <p class="details-description" id="winnerDescription"></p>
+                    <a href="#" target="_blank" rel="noopener noreferrer" class="details-link" id="winnerLink">
+                        Learn More About This Piece →
+                    </a>
+                </div>
+                <button class="reset-button" id="resetButton">Start New Battle</button>
+            </div>
+        </div>
+
+        <!-- Game Board -->
+        <div id="gameBoard" class="game-board">
+            <div class="battle-container">
+                <!-- Defender -->
+                <div class="competitor-section">
+                    <div class="competitor-label defender-label">
+                        <span class="label-text">Defender</span>
+                    </div>
+                    <div class="furniture-card" id="leftCard">
+                        <div class="card-emoji" id="leftEmoji"></div>
+                        <div class="card-content">
+                            <h3 class="card-title" id="leftTitle"></h3>
+                            <p class="card-designer" id="leftDesigner"></p>
+                            <p class="card-materials" id="leftMaterials"></p>
+                            <p class="card-description" id="leftDescription"></p>
+                            <a href="#" target="_blank" rel="noopener noreferrer" class="card-link" id="leftLink">
+                                View Details →
+                            </a>
+                        </div>
+                        <div class="choice-indicator hidden" id="leftIndicator">✓</div>
+                        <div class="countdown-overlay hidden" id="leftCountdown">
+                            <div class="countdown-circle">
+                                <span class="countdown-number" id="countdownNumber">5</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Poll Results -->
+                    <div class="poll-results hidden" id="leftPollResults">
+                        <div class="poll-content">
+                            <div class="poll-header">
+                                <span class="poll-label" id="leftPollLabel">Not chosen</span>
+                                <span class="poll-percentage" id="leftPollPercentage">0%</span>
+                            </div>
+                            <div class="poll-bar">
+                                <div class="poll-fill" id="leftPollFill"></div>
+                            </div>
+                            <div class="poll-description" id="leftPollDescription">
+                                0% of users chose this option
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VS Divider -->
+                <div class="vs-divider">
+                    <div class="vs-badge" id="vsBadge">VS</div>
+                </div>
+
+                <!-- Challenger -->
+                <div class="competitor-section">
+                    <div class="competitor-label challenger-label">
+                        <span class="label-text">Challenger</span>
+                    </div>
+                    <div class="furniture-card" id="rightCard">
+                        <div class="card-emoji" id="rightEmoji"></div>
+                        <div class="card-content">
+                            <h3 class="card-title" id="rightTitle"></h3>
+                            <p class="card-designer" id="rightDesigner"></p>
+                            <p class="card-materials" id="rightMaterials"></p>
+                            <p class="card-description" id="rightDescription"></p>
+                            <a href="#" target="_blank" rel="noopener noreferrer" class="card-link" id="rightLink">
+                                View Details →
+                            </a>
+                        </div>
+                        <div class="choice-indicator hidden" id="rightIndicator">✓</div>
+                        <div class="countdown-overlay hidden" id="rightCountdown">
+                            <div class="countdown-circle">
+                                <span class="countdown-number" id="countdownNumber">5</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Poll Results -->
+                    <div class="poll-results hidden" id="rightPollResults">
+                        <div class="poll-content">
+                            <div class="poll-header">
+                                <span class="poll-label" id="rightPollLabel">Not chosen</span>
+                                <span class="poll-percentage" id="rightPollPercentage">0%</span>
+                            </div>
+                            <div class="poll-bar">
+                                <div class="poll-fill" id="rightPollFill"></div>
+                            </div>
+                            <div class="poll-description" id="rightPollDescription">
+                                0% of users chose this option
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Next Round Button -->
+            <div class="next-round-section hidden" id="nextRoundSection">
+                <button class="next-round-button" id="nextRoundButton">Continue to Next Round →</button>
+            </div>
+        </div>
+
+        <!-- Round Counter -->
+        <div class="round-counter">
+            <span>Round <span id="roundNumber">1</span> of 15</span>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
