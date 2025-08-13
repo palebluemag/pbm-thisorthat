@@ -15,7 +15,22 @@ const dbService = {
                 .eq('is_active', true);
             
             if (error) throw error;
-            return data;
+            
+            // Generate public URLs for images
+            const productsWithImages = data.map((product) => {
+                if (product.image_path) {
+                    const { data: publicUrl } = supabase.storage
+                        .from('furniture-images')
+                        .getPublicUrl(product.image_path);
+                    
+                    if (publicUrl) {
+                        product.image_url = publicUrl.publicUrl;
+                    }
+                }
+                return product;
+            });
+            
+            return productsWithImages;
         } catch (error) {
             console.error('Error fetching products:', error);
             return [];
@@ -471,12 +486,35 @@ function updateDisplay() {
 // Update individual card
 function updateCard(side, item) {
     const prefix = side === 'left' ? 'left' : 'right';
-    
-    // Handle both database items and fallback items
-    const imageDisplay = item.image_url ? item.image_url : (item.image || '🪑');
     const linkUrl = item.product_url || item.link || '#';
     
-    elements[`${prefix}Emoji`].textContent = imageDisplay;
+    // Handle image display - use actual image or fallback to emoji
+    const imageContainer = elements[`${prefix}Emoji`];
+    
+    if (item.image_url) {
+        // Clear any existing content and create img element
+        imageContainer.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = item.image_url;
+        img.alt = item.name;
+        img.style.maxWidth = '100%';
+        img.style.maxHeight = '100%';
+        img.style.objectFit = 'contain';
+        img.style.borderRadius = '4px';
+        
+        // Handle image load errors - fallback to emoji
+        img.onerror = () => {
+            imageContainer.innerHTML = '';
+            imageContainer.textContent = item.image || '🪑';
+        };
+        
+        imageContainer.appendChild(img);
+    } else {
+        // Fallback to emoji
+        imageContainer.innerHTML = '';
+        imageContainer.textContent = item.image || '🪑';
+    }
+    
     elements[`${prefix}Title`].textContent = item.name;
     elements[`${prefix}Designer`].textContent = item.designer || '';
     elements[`${prefix}Materials`].textContent = item.materials || '';
@@ -743,10 +781,33 @@ function showGameOverScreen() {
     elements.gameBoard.classList.add('hidden');
     
     // Update winner information
-    const imageDisplay = gameState.winner.image_url ? gameState.winner.image_url : (gameState.winner.image || '🪑');
     const linkUrl = gameState.winner.product_url || gameState.winner.link || '#';
     
-    elements.winnerEmoji.textContent = imageDisplay;
+    // Handle winner image display
+    if (gameState.winner.image_url) {
+        // Clear any existing content and create img element
+        elements.winnerEmoji.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = gameState.winner.image_url;
+        img.alt = gameState.winner.name;
+        img.style.maxWidth = '100%';
+        img.style.maxHeight = '100%';
+        img.style.objectFit = 'contain';
+        img.style.borderRadius = '4px';
+        
+        // Handle image load errors - fallback to emoji
+        img.onerror = () => {
+            elements.winnerEmoji.innerHTML = '';
+            elements.winnerEmoji.textContent = gameState.winner.image || '🪑';
+        };
+        
+        elements.winnerEmoji.appendChild(img);
+    } else {
+        // Fallback to emoji
+        elements.winnerEmoji.innerHTML = '';
+        elements.winnerEmoji.textContent = gameState.winner.image || '🪑';
+    }
+    
     elements.winnerName.textContent = gameState.winner.name;
     elements.winnerDesigner.textContent = gameState.winner.designer || '';
     elements.winnerMaterials.textContent = gameState.winner.materials || '';
