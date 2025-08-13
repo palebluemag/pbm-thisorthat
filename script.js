@@ -710,6 +710,9 @@ function hidePollResults() {
 
 // Show continue button with animation
 function showContinueButton() {
+    // Hide VS badge
+    elements.vsBadge.classList.add('hidden');
+    // Show continue button
     elements.continueButton.classList.remove('hidden');
     setTimeout(() => {
         elements.continueButton.classList.add('show');
@@ -721,6 +724,8 @@ function hideContinueButton() {
     elements.continueButton.classList.remove('show');
     setTimeout(() => {
         elements.continueButton.classList.add('hidden');
+        // Show VS badge again
+        elements.vsBadge.classList.remove('hidden');
     }, 300);
 }
 
