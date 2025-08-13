@@ -351,9 +351,9 @@ body {
     align-items: center;
     justify-content: center;
     margin: 0 1rem;
-    padding-top: 2rem;
     gap: 1rem;
     min-width: 220px; /* Fixed width to prevent layout shift */
+    align-self: center;
 }
 
 .vs-badge {
