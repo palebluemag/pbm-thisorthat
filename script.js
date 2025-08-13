@@ -39,32 +39,65 @@ const dbService = {
         }
     },
 
-    async getChoiceStats(productId) {
+    async getHeadToHeadStats(productA_id, productB_id) {
         try {
-            const { data: wins, error: winsError } = await supabase
+            // Query for battles where productA won against productB
+            const { data: aWins, error: aError } = await supabase
                 .from('user_choices')
                 .select('id')
-                .eq('winner_id', productId);
+                .eq('winner_id', productA_id)
+                .eq('loser_id', productB_id);
 
-            const { data: losses, error: lossesError } = await supabase
+            // Query for battles where productB won against productA  
+            const { data: bWins, error: bError } = await supabase
                 .from('user_choices')
                 .select('id')
-                .eq('loser_id', productId);
+                .eq('winner_id', productB_id)
+                .eq('loser_id', productA_id);
 
-            if (winsError || lossesError) throw winsError || lossesError;
+            if (aError || bError) {
+                console.error('Supabase query error:', aError || bError);
+                throw aError || bError;
+            }
 
-            const winCount = wins?.length || 0;
-            const lossCount = losses?.length || 0;
-            const totalBattles = winCount + lossCount;
+            const productA_wins = aWins?.length || 0;
+            const productB_wins = bWins?.length || 0;
+            const totalBattles = productA_wins + productB_wins;
+
+            console.log(`Head-to-head stats: Product ${productA_id} vs ${productB_id}`);
+            console.log(`Product A wins: ${productA_wins}, Product B wins: ${productB_wins}, Total: ${totalBattles}`);
+
+            // Minimum threshold before showing real data
+            const MIN_BATTLES = 2;
+            
+            if (totalBattles < MIN_BATTLES) {
+                return {
+                    productA_percentage: null,
+                    productB_percentage: null,
+                    totalBattles,
+                    isRealData: false,
+                    hasEnoughData: false
+                };
+            }
+
+            const productA_percentage = Math.round((productA_wins / totalBattles) * 100);
             
             return {
-                wins: winCount,
-                losses: lossCount,
-                winPercentage: totalBattles > 0 ? Math.round((winCount / totalBattles) * 100) : 50
+                productA_percentage,
+                productB_percentage: 100 - productA_percentage,
+                totalBattles,
+                isRealData: true,
+                hasEnoughData: true
             };
         } catch (error) {
-            console.error('Error getting choice stats:', error);
-            return { wins: 0, losses: 0, winPercentage: 50 };
+            console.error('Error getting head-to-head stats:', error);
+            return {
+                productA_percentage: null,
+                productB_percentage: null,
+                totalBattles: 0,
+                isRealData: false,
+                hasEnoughData: false
+            };
         }
     }
 };
@@ -540,25 +573,32 @@ async function handleChoice(chosenItem) {
         loserItem.id
     );
     
-    // Get real poll percentages from database
+    // Get real head-to-head poll percentages from database
     try {
-        const leftStats = await dbService.getChoiceStats(gameState.currentPair[0].id);
-        const rightStats = await dbService.getChoiceStats(gameState.currentPair[1].id);
+        const headToHeadStats = await dbService.getHeadToHeadStats(
+            gameState.currentPair[0].id,
+            gameState.currentPair[1].id
+        );
         
-        gameState.pollResults = {
-            left: leftStats.winPercentage,
-            right: rightStats.winPercentage
-        };
+        if (headToHeadStats.hasEnoughData) {
+            gameState.pollResults = {
+                left: headToHeadStats.productA_percentage,
+                right: headToHeadStats.productB_percentage
+            };
+            console.log(`Showing real data: ${headToHeadStats.totalBattles} battles between these products`);
+        } else {
+            // Don't show percentages - will display "Not enough data" message
+            gameState.pollResults = {
+                left: null,
+                right: null
+            };
+            console.log('Not enough battles between these products, hiding percentages');
+        }
     } catch (error) {
-        console.error('Error getting poll stats:', error);
-        // Fallback to random percentages
-        const chosenPercentage = Math.floor(Math.random() * 40) + 50;
-        const otherPercentage = 100 - chosenPercentage;
-        const isLeftChoice = gameState.currentPair[0] === chosenItem;
-        
+        console.error('Error getting head-to-head stats:', error);
         gameState.pollResults = {
-            left: isLeftChoice ? chosenPercentage : otherPercentage,
-            right: isLeftChoice ? otherPercentage : chosenPercentage
+            left: null,
+            right: null
         };
     }
     
@@ -584,11 +624,18 @@ function showPollResults() {
     const leftChosen = gameState.chosenItem === gameState.currentPair[0];
     elements.leftPollLabel.textContent = leftChosen ? 'Your Choice' : 'Not Selected';
     elements.leftPollLabel.classList.toggle('chosen', leftChosen);
-    elements.leftPollPercentage.textContent = `${gameState.pollResults.left}%`;
-    elements.leftPollFill.style.width = `${gameState.pollResults.left}%`;
-    elements.leftPollFill.classList.toggle('chosen', leftChosen);
-    elements.leftPollDescription.textContent = `${gameState.pollResults.left}% chose this`;
     
+    if (gameState.pollResults.left !== null) {
+        elements.leftPollPercentage.textContent = `${gameState.pollResults.left}%`;
+        elements.leftPollFill.style.width = `${gameState.pollResults.left}%`;
+        elements.leftPollDescription.textContent = `${gameState.pollResults.left}% chose this`;
+    } else {
+        elements.leftPollPercentage.textContent = '—';
+        elements.leftPollFill.style.width = '0%';
+        elements.leftPollDescription.textContent = 'Not enough data';
+    }
+    
+    elements.leftPollFill.classList.toggle('chosen', leftChosen);
     const leftContent = leftResults.querySelector('.poll-content');
     leftContent.classList.toggle('chosen', leftChosen);
     
@@ -596,11 +643,18 @@ function showPollResults() {
     const rightChosen = gameState.chosenItem === gameState.currentPair[1];
     elements.rightPollLabel.textContent = rightChosen ? 'Your Choice' : 'Not Selected';
     elements.rightPollLabel.classList.toggle('chosen', rightChosen);
-    elements.rightPollPercentage.textContent = `${gameState.pollResults.right}%`;
-    elements.rightPollFill.style.width = `${gameState.pollResults.right}%`;
-    elements.rightPollFill.classList.toggle('chosen', rightChosen);
-    elements.rightPollDescription.textContent = `${gameState.pollResults.right}% chose this`;
     
+    if (gameState.pollResults.right !== null) {
+        elements.rightPollPercentage.textContent = `${gameState.pollResults.right}%`;
+        elements.rightPollFill.style.width = `${gameState.pollResults.right}%`;
+        elements.rightPollDescription.textContent = `${gameState.pollResults.right}% chose this`;
+    } else {
+        elements.rightPollPercentage.textContent = '—';
+        elements.rightPollFill.style.width = '0%';
+        elements.rightPollDescription.textContent = 'Not enough data';
+    }
+    
+    elements.rightPollFill.classList.toggle('chosen', rightChosen);
     const rightContent = rightResults.querySelector('.poll-content');
     rightContent.classList.toggle('chosen', rightChosen);
 }
