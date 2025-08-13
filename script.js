@@ -1,5 +1,81 @@
-// Furniture items data
-const furnitureItems = [
+// Supabase configuration
+const SUPABASE_URL = 'https://guxqqxrrpvrrboiinens.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_ng4WrHmBMatzMMzyrpQuXw_4DzuZ6a8';
+
+// Initialize Supabase client
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Database service functions
+const dbService = {
+    async fetchActiveProducts() {
+        try {
+            const { data, error } = await supabase
+                .from('products')
+                .select('*')
+                .eq('is_active', true);
+            
+            if (error) throw error;
+            return data;
+        } catch (error) {
+            console.error('Error fetching products:', error);
+            return [];
+        }
+    },
+
+    async recordUserChoice(sessionId, roundNumber, winnerId, loserId) {
+        try {
+            const { error } = await supabase
+                .from('user_choices')
+                .insert({
+                    session_id: sessionId,
+                    round_number: roundNumber,
+                    winner_id: winnerId,
+                    loser_id: loserId
+                });
+            
+            if (error) throw error;
+        } catch (error) {
+            console.error('Error recording user choice:', error);
+        }
+    },
+
+    async getChoiceStats(productId) {
+        try {
+            const { data: wins, error: winsError } = await supabase
+                .from('user_choices')
+                .select('id')
+                .eq('winner_id', productId);
+
+            const { data: losses, error: lossesError } = await supabase
+                .from('user_choices')
+                .select('id')
+                .eq('loser_id', productId);
+
+            if (winsError || lossesError) throw winsError || lossesError;
+
+            const winCount = wins?.length || 0;
+            const lossCount = losses?.length || 0;
+            const totalBattles = winCount + lossCount;
+            
+            return {
+                wins: winCount,
+                losses: lossCount,
+                winPercentage: totalBattles > 0 ? Math.round((winCount / totalBattles) * 100) : 50
+            };
+        } catch (error) {
+            console.error('Error getting choice stats:', error);
+            return { wins: 0, losses: 0, winPercentage: 50 };
+        }
+    }
+};
+
+// Generate unique session ID
+function generateSessionId() {
+    return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+
+// Legacy furniture items data (fallback)
+const fallbackFurnitureItems = [
     {
         name: "Barcelona Chair",
         designer: "Ludwig Mies van der Rohe",
@@ -206,7 +282,8 @@ let gameState = {
     ponderTime: 3,
     showResults: false,
     pollResults: { left: 0, right: 0 },
-    ponderTimer: null
+    ponderTimer: null,
+    sessionId: null
 };
 
 // DOM elements
@@ -226,6 +303,7 @@ const elements = {
     leftTitle: document.getElementById('leftTitle'),
     leftDesigner: document.getElementById('leftDesigner'),
     leftMaterials: document.getElementById('leftMaterials'),
+    leftRetailer: document.getElementById('leftRetailer'),
     leftDescription: document.getElementById('leftDescription'),
     leftLink: document.getElementById('leftLink'),
     leftPollResults: document.getElementById('leftPollResults'),
@@ -239,6 +317,7 @@ const elements = {
     rightTitle: document.getElementById('rightTitle'),
     rightDesigner: document.getElementById('rightDesigner'),
     rightMaterials: document.getElementById('rightMaterials'),
+    rightRetailer: document.getElementById('rightRetailer'),
     rightDescription: document.getElementById('rightDescription'),
     rightLink: document.getElementById('rightLink'),
     rightPollResults: document.getElementById('rightPollResults'),
@@ -252,6 +331,7 @@ const elements = {
     winnerName: document.getElementById('winnerName'),
     winnerDesigner: document.getElementById('winnerDesigner'),
     winnerMaterials: document.getElementById('winnerMaterials'),
+    winnerRetailer: document.getElementById('winnerRetailer'),
     winnerDescription: document.getElementById('winnerDescription'),
     winnerLink: document.getElementById('winnerLink'),
     
@@ -260,25 +340,58 @@ const elements = {
 };
 
 // Initialize game
-function initializeGame() {
-    // Shuffle and select 16 random items
-    const shuffled = [...furnitureItems].sort(() => 0.5 - Math.random());
-    const selected = shuffled.slice(0, 16);
-    
-    gameState.gamePool = selected;
-    gameState.currentPair = [selected[0], selected[1]];
-    gameState.round = 1;
-    gameState.gameOver = false;
-    gameState.winner = null;
-    gameState.chosenItem = null;
-    gameState.isLocked = true;
-    gameState.ponderTime = 3;
-    gameState.showResults = false;
-    gameState.pollResults = { left: 0, right: 0 };
-    
-    // Update UI
-    updateDisplay();
-    startPonderTime();
+async function initializeGame() {
+    try {
+        // Generate new session ID
+        gameState.sessionId = generateSessionId();
+        
+        // Fetch products from Supabase
+        let products = await dbService.fetchActiveProducts();
+        
+        // Fallback to hardcoded data if database fails
+        if (!products || products.length === 0) {
+            console.warn('No products from database, using fallback data');
+            products = fallbackFurnitureItems;
+        }
+        
+        // Shuffle and select 16 random items
+        const shuffled = [...products].sort(() => 0.5 - Math.random());
+        const selected = shuffled.slice(0, Math.min(16, shuffled.length));
+        
+        gameState.gamePool = selected;
+        gameState.currentPair = [selected[0], selected[1]];
+        gameState.round = 1;
+        gameState.gameOver = false;
+        gameState.winner = null;
+        gameState.chosenItem = null;
+        gameState.isLocked = true;
+        gameState.ponderTime = 3;
+        gameState.showResults = false;
+        gameState.pollResults = { left: 0, right: 0 };
+        
+        // Update UI
+        updateDisplay();
+        startPonderTime();
+    } catch (error) {
+        console.error('Error initializing game:', error);
+        // Fallback to hardcoded data
+        const shuffled = [...fallbackFurnitureItems].sort(() => 0.5 - Math.random());
+        const selected = shuffled.slice(0, 16);
+        
+        gameState.gamePool = selected;
+        gameState.currentPair = [selected[0], selected[1]];
+        gameState.round = 1;
+        gameState.gameOver = false;
+        gameState.winner = null;
+        gameState.chosenItem = null;
+        gameState.isLocked = true;
+        gameState.ponderTime = 3;
+        gameState.showResults = false;
+        gameState.pollResults = { left: 0, right: 0 };
+        
+        updateDisplay();
+        startPonderTime();
+    }
 }
 
 // Update display
@@ -326,12 +439,17 @@ function updateDisplay() {
 function updateCard(side, item) {
     const prefix = side === 'left' ? 'left' : 'right';
     
-    elements[`${prefix}Emoji`].textContent = item.image;
+    // Handle both database items and fallback items
+    const imageDisplay = item.image_url ? item.image_url : (item.image || '🪑');
+    const linkUrl = item.product_url || item.link || '#';
+    
+    elements[`${prefix}Emoji`].textContent = imageDisplay;
     elements[`${prefix}Title`].textContent = item.name;
-    elements[`${prefix}Designer`].textContent = item.designer;
-    elements[`${prefix}Materials`].textContent = item.materials;
-    elements[`${prefix}Description`].textContent = item.description;
-    elements[`${prefix}Link`].href = item.link;
+    elements[`${prefix}Designer`].textContent = item.designer || '';
+    elements[`${prefix}Materials`].textContent = item.materials || '';
+    elements[`${prefix}Retailer`].textContent = item.retailer || '';
+    elements[`${prefix}Description`].textContent = item.description || '';
+    elements[`${prefix}Link`].href = linkUrl;
 }
 
 // Update card states
@@ -406,25 +524,45 @@ function startPonderTime() {
 }
 
 // Handle choice
-function handleChoice(chosenItem) {
+async function handleChoice(chosenItem) {
     if (gameState.gameOver || gameState.isLocked || gameState.showResults) {
         return;
     }
     
     gameState.chosenItem = chosenItem;
     
-    // Generate random poll percentages
-    const chosenPercentage = Math.floor(Math.random() * 40) + 50; // 50-90%
-    const otherPercentage = 100 - chosenPercentage;
+    // Record the choice in database
+    const loserItem = gameState.currentPair.find(item => item !== chosenItem);
+    await dbService.recordUserChoice(
+        gameState.sessionId,
+        gameState.round,
+        chosenItem.id,
+        loserItem.id
+    );
     
-    const isLeftChoice = gameState.currentPair[0] === chosenItem;
-    gameState.pollResults = {
-        left: isLeftChoice ? chosenPercentage : otherPercentage,
-        right: isLeftChoice ? otherPercentage : chosenPercentage
-    };
+    // Get real poll percentages from database
+    try {
+        const leftStats = await dbService.getChoiceStats(gameState.currentPair[0].id);
+        const rightStats = await dbService.getChoiceStats(gameState.currentPair[1].id);
+        
+        gameState.pollResults = {
+            left: leftStats.winPercentage,
+            right: rightStats.winPercentage
+        };
+    } catch (error) {
+        console.error('Error getting poll stats:', error);
+        // Fallback to random percentages
+        const chosenPercentage = Math.floor(Math.random() * 40) + 50;
+        const otherPercentage = 100 - chosenPercentage;
+        const isLeftChoice = gameState.currentPair[0] === chosenItem;
+        
+        gameState.pollResults = {
+            left: isLeftChoice ? chosenPercentage : otherPercentage,
+            right: isLeftChoice ? otherPercentage : chosenPercentage
+        };
+    }
     
     gameState.showResults = true;
-    
     updateDisplay();
 }
 
@@ -551,12 +689,16 @@ function showGameOverScreen() {
     elements.gameBoard.classList.add('hidden');
     
     // Update winner information
-    elements.winnerEmoji.textContent = gameState.winner.image;
+    const imageDisplay = gameState.winner.image_url ? gameState.winner.image_url : (gameState.winner.image || '🪑');
+    const linkUrl = gameState.winner.product_url || gameState.winner.link || '#';
+    
+    elements.winnerEmoji.textContent = imageDisplay;
     elements.winnerName.textContent = gameState.winner.name;
-    elements.winnerDesigner.textContent = gameState.winner.designer;
-    elements.winnerMaterials.textContent = gameState.winner.materials;
-    elements.winnerDescription.textContent = gameState.winner.description;
-    elements.winnerLink.href = gameState.winner.link;
+    elements.winnerDesigner.textContent = gameState.winner.designer || '';
+    elements.winnerMaterials.textContent = gameState.winner.materials || '';
+    elements.winnerRetailer.textContent = gameState.winner.retailer || '';
+    elements.winnerDescription.textContent = gameState.winner.description || '';
+    elements.winnerLink.href = linkUrl;
 }
 
 // Reset game

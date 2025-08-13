@@ -157,6 +157,14 @@ body {
     letter-spacing: 0.1em;
 }
 
+.winner-retailer {
+    font-size: 0.875rem;
+    color: #999999;
+    font-weight: 300;
+    font-style: italic;
+    margin-bottom: 0.5rem;
+}
+
 .winner-details {
     border-top: 1px solid #e5e5e5;
     padding-top: 1.5rem;
@@ -320,6 +328,13 @@ body {
     font-weight: 300;
     text-transform: uppercase;
     letter-spacing: 0.1em;
+}
+
+.card-retailer {
+    font-size: 0.75rem;
+    color: #999999;
+    font-weight: 300;
+    font-style: italic;
 }
 
 .card-description {
