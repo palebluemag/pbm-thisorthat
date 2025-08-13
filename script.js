@@ -1,5 +1,129 @@
-// Furniture items data
-const furnitureItems = [
+// Supabase configuration
+const SUPABASE_URL = 'https://guxqqxrrpvrrboiinens.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_ng4WrHmBMatzMMzyrpQuXw_4DzuZ6a8';
+
+// Initialize Supabase client
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Database service functions
+const dbService = {
+    async fetchActiveProducts() {
+        try {
+            const { data, error } = await supabase
+                .from('products')
+                .select('*')
+                .eq('is_active', true);
+            
+            if (error) throw error;
+            
+            // Generate public URLs for images
+            const productsWithImages = data.map((product) => {
+                if (product.image_path) {
+                    const { data: publicUrl } = supabase.storage
+                        .from('furniture-images')
+                        .getPublicUrl(product.image_path);
+                    
+                    if (publicUrl) {
+                        product.image_url = publicUrl.publicUrl;
+                    }
+                }
+                return product;
+            });
+            
+            return productsWithImages;
+        } catch (error) {
+            console.error('Error fetching products:', error);
+            return [];
+        }
+    },
+
+    async recordUserChoice(sessionId, roundNumber, winnerId, loserId) {
+        try {
+            const { error } = await supabase
+                .from('user_choices')
+                .insert({
+                    session_id: sessionId,
+                    round_number: roundNumber,
+                    winner_id: winnerId,
+                    loser_id: loserId
+                });
+            
+            if (error) throw error;
+        } catch (error) {
+            console.error('Error recording user choice:', error);
+        }
+    },
+
+    async getHeadToHeadStats(productA_id, productB_id) {
+        try {
+            // Query for battles where productA won against productB
+            const { data: aWins, error: aError } = await supabase
+                .from('user_choices')
+                .select('id')
+                .eq('winner_id', productA_id)
+                .eq('loser_id', productB_id);
+
+            // Query for battles where productB won against productA  
+            const { data: bWins, error: bError } = await supabase
+                .from('user_choices')
+                .select('id')
+                .eq('winner_id', productB_id)
+                .eq('loser_id', productA_id);
+
+            if (aError || bError) {
+                console.error('Supabase query error:', aError || bError);
+                throw aError || bError;
+            }
+
+            const productA_wins = aWins?.length || 0;
+            const productB_wins = bWins?.length || 0;
+            const totalBattles = productA_wins + productB_wins;
+
+            console.log(`Head-to-head stats: Product ${productA_id} vs ${productB_id}`);
+            console.log(`Product A wins: ${productA_wins}, Product B wins: ${productB_wins}, Total: ${totalBattles}`);
+
+            // Minimum threshold before showing real data
+            const MIN_BATTLES = 2;
+            
+            if (totalBattles < MIN_BATTLES) {
+                return {
+                    productA_percentage: null,
+                    productB_percentage: null,
+                    totalBattles,
+                    isRealData: false,
+                    hasEnoughData: false
+                };
+            }
+
+            const productA_percentage = Math.round((productA_wins / totalBattles) * 100);
+            
+            return {
+                productA_percentage,
+                productB_percentage: 100 - productA_percentage,
+                totalBattles,
+                isRealData: true,
+                hasEnoughData: true
+            };
+        } catch (error) {
+            console.error('Error getting head-to-head stats:', error);
+            return {
+                productA_percentage: null,
+                productB_percentage: null,
+                totalBattles: 0,
+                isRealData: false,
+                hasEnoughData: false
+            };
+        }
+    }
+};
+
+// Generate unique session ID
+function generateSessionId() {
+    return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+
+// Legacy furniture items data (fallback)
+const fallbackFurnitureItems = [
     {
         name: "Barcelona Chair",
         designer: "Ludwig Mies van der Rohe",
@@ -206,7 +330,8 @@ let gameState = {
     ponderTime: 3,
     showResults: false,
     pollResults: { left: 0, right: 0 },
-    ponderTimer: null
+    ponderTimer: null,
+    sessionId: null
 };
 
 // DOM elements
@@ -226,6 +351,7 @@ const elements = {
     leftTitle: document.getElementById('leftTitle'),
     leftDesigner: document.getElementById('leftDesigner'),
     leftMaterials: document.getElementById('leftMaterials'),
+    leftRetailer: document.getElementById('leftRetailer'),
     leftDescription: document.getElementById('leftDescription'),
     leftLink: document.getElementById('leftLink'),
     leftPollResults: document.getElementById('leftPollResults'),
@@ -239,6 +365,7 @@ const elements = {
     rightTitle: document.getElementById('rightTitle'),
     rightDesigner: document.getElementById('rightDesigner'),
     rightMaterials: document.getElementById('rightMaterials'),
+    rightRetailer: document.getElementById('rightRetailer'),
     rightDescription: document.getElementById('rightDescription'),
     rightLink: document.getElementById('rightLink'),
     rightPollResults: document.getElementById('rightPollResults'),
@@ -252,6 +379,7 @@ const elements = {
     winnerName: document.getElementById('winnerName'),
     winnerDesigner: document.getElementById('winnerDesigner'),
     winnerMaterials: document.getElementById('winnerMaterials'),
+    winnerRetailer: document.getElementById('winnerRetailer'),
     winnerDescription: document.getElementById('winnerDescription'),
     winnerLink: document.getElementById('winnerLink'),
     
@@ -260,25 +388,58 @@ const elements = {
 };
 
 // Initialize game
-function initializeGame() {
-    // Shuffle and select 16 random items
-    const shuffled = [...furnitureItems].sort(() => 0.5 - Math.random());
-    const selected = shuffled.slice(0, 16);
-    
-    gameState.gamePool = selected;
-    gameState.currentPair = [selected[0], selected[1]];
-    gameState.round = 1;
-    gameState.gameOver = false;
-    gameState.winner = null;
-    gameState.chosenItem = null;
-    gameState.isLocked = true;
-    gameState.ponderTime = 3;
-    gameState.showResults = false;
-    gameState.pollResults = { left: 0, right: 0 };
-    
-    // Update UI
-    updateDisplay();
-    startPonderTime();
+async function initializeGame() {
+    try {
+        // Generate new session ID
+        gameState.sessionId = generateSessionId();
+        
+        // Fetch products from Supabase
+        let products = await dbService.fetchActiveProducts();
+        
+        // Fallback to hardcoded data if database fails
+        if (!products || products.length === 0) {
+            console.warn('No products from database, using fallback data');
+            products = fallbackFurnitureItems;
+        }
+        
+        // Shuffle and select 16 random items
+        const shuffled = [...products].sort(() => 0.5 - Math.random());
+        const selected = shuffled.slice(0, Math.min(16, shuffled.length));
+        
+        gameState.gamePool = selected;
+        gameState.currentPair = [selected[0], selected[1]];
+        gameState.round = 1;
+        gameState.gameOver = false;
+        gameState.winner = null;
+        gameState.chosenItem = null;
+        gameState.isLocked = true;
+        gameState.ponderTime = 3;
+        gameState.showResults = false;
+        gameState.pollResults = { left: 0, right: 0 };
+        
+        // Update UI
+        updateDisplay();
+        startPonderTime();
+    } catch (error) {
+        console.error('Error initializing game:', error);
+        // Fallback to hardcoded data
+        const shuffled = [...fallbackFurnitureItems].sort(() => 0.5 - Math.random());
+        const selected = shuffled.slice(0, 16);
+        
+        gameState.gamePool = selected;
+        gameState.currentPair = [selected[0], selected[1]];
+        gameState.round = 1;
+        gameState.gameOver = false;
+        gameState.winner = null;
+        gameState.chosenItem = null;
+        gameState.isLocked = true;
+        gameState.ponderTime = 3;
+        gameState.showResults = false;
+        gameState.pollResults = { left: 0, right: 0 };
+        
+        updateDisplay();
+        startPonderTime();
+    }
 }
 
 // Update display
@@ -325,13 +486,41 @@ function updateDisplay() {
 // Update individual card
 function updateCard(side, item) {
     const prefix = side === 'left' ? 'left' : 'right';
+    const linkUrl = item.product_url || item.link || '#';
     
-    elements[`${prefix}Emoji`].textContent = item.image;
+    // Handle image display - use actual image or fallback to emoji
+    const imageContainer = elements[`${prefix}Emoji`];
+    
+    if (item.image_url) {
+        // Clear any existing content and create img element
+        imageContainer.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = item.image_url;
+        img.alt = item.name;
+        img.style.maxWidth = '100%';
+        img.style.maxHeight = '100%';
+        img.style.objectFit = 'contain';
+        img.style.borderRadius = '4px';
+        
+        // Handle image load errors - fallback to emoji
+        img.onerror = () => {
+            imageContainer.innerHTML = '';
+            imageContainer.textContent = item.image || '🪑';
+        };
+        
+        imageContainer.appendChild(img);
+    } else {
+        // Fallback to emoji
+        imageContainer.innerHTML = '';
+        imageContainer.textContent = item.image || '🪑';
+    }
+    
     elements[`${prefix}Title`].textContent = item.name;
-    elements[`${prefix}Designer`].textContent = item.designer;
-    elements[`${prefix}Materials`].textContent = item.materials;
-    elements[`${prefix}Description`].textContent = item.description;
-    elements[`${prefix}Link`].href = item.link;
+    elements[`${prefix}Designer`].textContent = item.designer || '';
+    elements[`${prefix}Materials`].textContent = item.materials || '';
+    elements[`${prefix}Retailer`].textContent = item.retailer || '';
+    elements[`${prefix}Description`].textContent = item.description || '';
+    elements[`${prefix}Link`].href = linkUrl;
 }
 
 // Update card states
@@ -406,25 +595,52 @@ function startPonderTime() {
 }
 
 // Handle choice
-function handleChoice(chosenItem) {
+async function handleChoice(chosenItem) {
     if (gameState.gameOver || gameState.isLocked || gameState.showResults) {
         return;
     }
     
     gameState.chosenItem = chosenItem;
     
-    // Generate random poll percentages
-    const chosenPercentage = Math.floor(Math.random() * 40) + 50; // 50-90%
-    const otherPercentage = 100 - chosenPercentage;
+    // Record the choice in database
+    const loserItem = gameState.currentPair.find(item => item !== chosenItem);
+    await dbService.recordUserChoice(
+        gameState.sessionId,
+        gameState.round,
+        chosenItem.id,
+        loserItem.id
+    );
     
-    const isLeftChoice = gameState.currentPair[0] === chosenItem;
-    gameState.pollResults = {
-        left: isLeftChoice ? chosenPercentage : otherPercentage,
-        right: isLeftChoice ? otherPercentage : chosenPercentage
-    };
+    // Get real head-to-head poll percentages from database
+    try {
+        const headToHeadStats = await dbService.getHeadToHeadStats(
+            gameState.currentPair[0].id,
+            gameState.currentPair[1].id
+        );
+        
+        if (headToHeadStats.hasEnoughData) {
+            gameState.pollResults = {
+                left: headToHeadStats.productA_percentage,
+                right: headToHeadStats.productB_percentage
+            };
+            console.log(`Showing real data: ${headToHeadStats.totalBattles} battles between these products`);
+        } else {
+            // Don't show percentages - will display "Not enough data" message
+            gameState.pollResults = {
+                left: null,
+                right: null
+            };
+            console.log('Not enough battles between these products, hiding percentages');
+        }
+    } catch (error) {
+        console.error('Error getting head-to-head stats:', error);
+        gameState.pollResults = {
+            left: null,
+            right: null
+        };
+    }
     
     gameState.showResults = true;
-    
     updateDisplay();
 }
 
@@ -446,11 +662,18 @@ function showPollResults() {
     const leftChosen = gameState.chosenItem === gameState.currentPair[0];
     elements.leftPollLabel.textContent = leftChosen ? 'Your Choice' : 'Not Selected';
     elements.leftPollLabel.classList.toggle('chosen', leftChosen);
-    elements.leftPollPercentage.textContent = `${gameState.pollResults.left}%`;
-    elements.leftPollFill.style.width = `${gameState.pollResults.left}%`;
-    elements.leftPollFill.classList.toggle('chosen', leftChosen);
-    elements.leftPollDescription.textContent = `${gameState.pollResults.left}% chose this`;
     
+    if (gameState.pollResults.left !== null) {
+        elements.leftPollPercentage.textContent = `${gameState.pollResults.left}%`;
+        elements.leftPollFill.style.width = `${gameState.pollResults.left}%`;
+        elements.leftPollDescription.textContent = `${gameState.pollResults.left}% chose this`;
+    } else {
+        elements.leftPollPercentage.textContent = '—';
+        elements.leftPollFill.style.width = '0%';
+        elements.leftPollDescription.textContent = 'Not enough data';
+    }
+    
+    elements.leftPollFill.classList.toggle('chosen', leftChosen);
     const leftContent = leftResults.querySelector('.poll-content');
     leftContent.classList.toggle('chosen', leftChosen);
     
@@ -458,11 +681,18 @@ function showPollResults() {
     const rightChosen = gameState.chosenItem === gameState.currentPair[1];
     elements.rightPollLabel.textContent = rightChosen ? 'Your Choice' : 'Not Selected';
     elements.rightPollLabel.classList.toggle('chosen', rightChosen);
-    elements.rightPollPercentage.textContent = `${gameState.pollResults.right}%`;
-    elements.rightPollFill.style.width = `${gameState.pollResults.right}%`;
-    elements.rightPollFill.classList.toggle('chosen', rightChosen);
-    elements.rightPollDescription.textContent = `${gameState.pollResults.right}% chose this`;
     
+    if (gameState.pollResults.right !== null) {
+        elements.rightPollPercentage.textContent = `${gameState.pollResults.right}%`;
+        elements.rightPollFill.style.width = `${gameState.pollResults.right}%`;
+        elements.rightPollDescription.textContent = `${gameState.pollResults.right}% chose this`;
+    } else {
+        elements.rightPollPercentage.textContent = '—';
+        elements.rightPollFill.style.width = '0%';
+        elements.rightPollDescription.textContent = 'Not enough data';
+    }
+    
+    elements.rightPollFill.classList.toggle('chosen', rightChosen);
     const rightContent = rightResults.querySelector('.poll-content');
     rightContent.classList.toggle('chosen', rightChosen);
 }
@@ -551,12 +781,39 @@ function showGameOverScreen() {
     elements.gameBoard.classList.add('hidden');
     
     // Update winner information
-    elements.winnerEmoji.textContent = gameState.winner.image;
+    const linkUrl = gameState.winner.product_url || gameState.winner.link || '#';
+    
+    // Handle winner image display
+    if (gameState.winner.image_url) {
+        // Clear any existing content and create img element
+        elements.winnerEmoji.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = gameState.winner.image_url;
+        img.alt = gameState.winner.name;
+        img.style.maxWidth = '100%';
+        img.style.maxHeight = '100%';
+        img.style.objectFit = 'contain';
+        img.style.borderRadius = '4px';
+        
+        // Handle image load errors - fallback to emoji
+        img.onerror = () => {
+            elements.winnerEmoji.innerHTML = '';
+            elements.winnerEmoji.textContent = gameState.winner.image || '🪑';
+        };
+        
+        elements.winnerEmoji.appendChild(img);
+    } else {
+        // Fallback to emoji
+        elements.winnerEmoji.innerHTML = '';
+        elements.winnerEmoji.textContent = gameState.winner.image || '🪑';
+    }
+    
     elements.winnerName.textContent = gameState.winner.name;
-    elements.winnerDesigner.textContent = gameState.winner.designer;
-    elements.winnerMaterials.textContent = gameState.winner.materials;
-    elements.winnerDescription.textContent = gameState.winner.description;
-    elements.winnerLink.href = gameState.winner.link;
+    elements.winnerDesigner.textContent = gameState.winner.designer || '';
+    elements.winnerMaterials.textContent = gameState.winner.materials || '';
+    elements.winnerRetailer.textContent = gameState.winner.retailer || '';
+    elements.winnerDescription.textContent = gameState.winner.description || '';
+    elements.winnerLink.href = linkUrl;
 }
 
 // Reset game
