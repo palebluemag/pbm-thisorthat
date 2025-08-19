@@ -7,17 +7,26 @@
 
 body {
     font-family: 'Inter', sans-serif;
-    background-color: #fafafa;
+    background-color: #E9EFF4;
     color: #000000;
     line-height: 1.6;
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
     font-weight: 300;
 }
 
+body.ponder-mode {
+    background-color: #ffffff;
+    transition: background-color 0.3s ease;
+}
+
 .container {
-    max-width: 1400px;
+    max-width: 1600px;
     margin: 0 auto;
     padding: 2rem;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Hidden utility class */
@@ -64,10 +73,84 @@ body {
     }
 }
 
+/* Start Screen */
+.start-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.start-card {
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    padding: 3rem;
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+}
+
+.start-title {
+    font-size: 2rem;
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #000000;
+    margin-bottom: 0.5rem;
+}
+
+.start-subtitle {
+    font-size: 1rem;
+    color: #666666;
+    font-weight: 300;
+    margin-bottom: 2rem;
+}
+
+.disclaimer {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: #fafafa;
+    border: 1px solid #e5e5e5;
+}
+
+.disclaimer p {
+    font-size: 0.875rem;
+    color: #333333;
+    font-weight: 300;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.play-button {
+    color: #ffffff;
+    background: #000000;
+    border: 1px solid #000000;
+    padding: 1rem 2rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 300;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.play-button:hover {
+    background: #333333;
+    border-color: #333333;
+}
+
 /* Header */
 .header {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
+    flex-shrink: 0;
 }
 
 .title {
@@ -83,6 +166,13 @@ body {
     font-size: 0.875rem;
     color: #666666;
     font-weight: 300;
+}
+
+.subtitle.round-info {
+    color: #999999;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
 }
 
 /* Game Over Screen */
@@ -215,21 +305,35 @@ body {
 
 /* Game Board */
 .game-board {
-    margin-bottom: 3rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .battle-container {
     display: flex;
-    gap: 2rem;
+    gap: min(2vw, 3rem);
     align-items: flex-start;
-    margin-bottom: 2rem;
+    flex: 1;
+    min-height: 0;
+    max-height: 85vh;
+    position: relative;
+    justify-content: center;
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
 }
 
 .option-section {
-    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.5rem;
+    min-height: 0;
+    width: min(40vw, 600px);
+    min-width: 350px;
+    flex-shrink: 0;
+    align-items: stretch;
 }
 
 .option-label {
@@ -250,25 +354,49 @@ body {
     background: #ffffff;
     border: 1px solid #e5e5e5;
     cursor: pointer;
-    transition: opacity 0.4s ease, border-color 0.3s ease, transform 0.3s ease;
-    height: 100%;
+    transition: border-color 0.15s ease, opacity 0.3s ease;
     display: flex;
-    flex-direction: column;
-    opacity: 0.6;
+    opacity: 1;
+    width: 100%;
+    height: min(45vh, 500px);
+    min-height: 300px;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.furniture-card.ponder-disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+    pointer-events: none;
 }
 
 .furniture-card.active {
     opacity: 1;
-    transition: opacity 0.6s ease;
 }
 
-.furniture-card:hover {
+.furniture-card.active:hover {
     border-color: #cccccc;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.furniture-card.locked:hover,
+.furniture-card.chosen:hover,
+.furniture-card.not-chosen:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: inherit;
 }
 
 .furniture-card.locked {
     cursor: default;
-    opacity: 0.6;
+    opacity: 1;
+}
+
+.furniture-card.locked:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: #e5e5e5;
 }
 
 .furniture-card.chosen {
@@ -281,25 +409,39 @@ body {
 }
 
 .card-image-container {
-    height: 16rem;
+    width: 60%;
     background: #fafafa;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-bottom: 1px solid #e5e5e5;
+    border-right: 1px solid #e5e5e5;
+    overflow: hidden;
+    position: relative;
 }
 
 .card-emoji {
-    font-size: 6rem;
+    font-size: min(5vw, 4.5rem);
     line-height: 1;
+    width: 85%;
+    aspect-ratio: 4/5;
+    object-fit: contain;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-height: calc(100% - 2rem);
+    align-self: center;
+    min-width: 240px;
 }
 
 .card-content {
-    padding: 1rem;
-    flex-grow: 1;
+    padding: min(2vw, 1.5rem);
+    width: 40%;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
+    min-height: 0;
+    overflow: hidden;
+    gap: 0.5rem;
 }
 
 .card-info {
@@ -307,42 +449,57 @@ body {
 }
 
 .card-title {
-    font-size: 0.875rem;
+    font-size: clamp(0.75rem, 1.5vw, 0.875rem);
     font-weight: 400;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: #000000;
     margin-bottom: 0.25rem;
+    line-height: 1.2;
 }
 
 .card-designer {
-    font-size: 0.75rem;
+    font-size: clamp(0.625rem, 1.2vw, 0.75rem);
     color: #666666;
     font-weight: 300;
     margin-bottom: 0.25rem;
+    line-height: 1.2;
 }
 
 .card-materials {
-    font-size: 0.75rem;
+    font-size: clamp(0.625rem, 1.1vw, 0.75rem);
     color: #888888;
     font-weight: 300;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.05em;
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .card-retailer {
-    font-size: 0.75rem;
+    font-size: clamp(0.625rem, 1.1vw, 0.75rem);
     color: #999999;
     font-weight: 300;
     font-style: italic;
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .card-description {
-    font-size: 0.75rem;
+    font-size: clamp(0.7rem, 1.2vw, 0.85rem);
     color: #333333;
     font-weight: 300;
-    line-height: 1.6;
-    margin-bottom: 0.75rem;
+    line-height: 1.4;
+    margin-bottom: auto;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    flex: 1;
 }
 
 .card-link {
@@ -352,7 +509,8 @@ body {
     font-weight: 300;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    margin-top: auto;
+    margin-top: 0;
+    flex-shrink: 0;
 }
 
 .card-link:hover {
@@ -365,23 +523,33 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin: 0 1rem;
     gap: 1rem;
-    min-width: 220px; /* Fixed width to prevent layout shift */
-    align-self: center;
+    width: min(8vw, 120px);
+    min-width: 100px;
+    align-self: flex-start;
+    flex-shrink: 0;
+    height: min(45vh, 500px);
+    min-height: 300px;
+    margin-top: 2rem;
 }
 
 .vs-badge {
     background: #000000;
     color: #ffffff;
     border: 1px solid #000000;
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
     font-weight: 300;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     text-align: center;
     transition: all 0.3s ease;
+}
+
+.vs-badge.ponder-mode {
+    background: #4a90c2;
+    border-color: #4a90c2;
+    color: #ffffff;
 }
 
 .vs-badge.hidden {
@@ -395,17 +563,15 @@ body {
 }
 
 .ponder-message {
-    font-size: 0.75rem;
-    color: #888888;
-    font-weight: 300;
+    font-size: clamp(0.7rem, 1.2vw, 0.85rem);
+    color: #4a90c2;
+    font-weight: 400;
     text-align: center;
-    font-style: italic;
     opacity: 0;
-    transform: translateY(10px);
-    transition: all 0.8s ease-in-out;
-    max-width: 200px;
+    transition: opacity 0.3s ease;
+    max-width: 220px;
     line-height: 1.4;
-    min-height: 2.4rem; /* Reserve space to prevent layout shift */
+    height: 2rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -413,7 +579,6 @@ body {
 
 .ponder-message.show {
     opacity: 1;
-    transform: translateY(0);
 }
 
 .ponder-message.hidden {
@@ -423,15 +588,17 @@ body {
 
 /* Poll Results */
 .poll-results {
-    margin-top: 1rem;
+    margin-top: 0.5rem;
     opacity: 0;
-    transform: translateY(20px);
-    transition: all 0.8s ease-in-out;
+    transition: opacity 0.3s ease;
+    position: relative;
+    height: 4rem;
+    min-height: 4rem;
+    width: 100%;
 }
 
 .poll-results.show {
     opacity: 1;
-    transform: translateY(0);
 }
 
 .poll-content {
@@ -498,8 +665,15 @@ body {
 
 /* Controls */
 .controls {
-    text-align: center;
-    margin-bottom: 1.5rem;
+    position: absolute;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 200px;
 }
 
 .continue-button {
@@ -530,116 +704,366 @@ body {
 }
 
 .selection-prompt {
-    font-size: 0.75rem;
+    font-size: clamp(0.7rem, 1.2vw, 0.85rem);
     color: #888888;
     font-weight: 300;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     opacity: 0;
-    transform: translateY(10px);
-    transition: all 0.6s ease-in-out;
+    transition: opacity 0.3s ease;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .selection-prompt.show {
     opacity: 1;
-    transform: translateY(0);
 }
 
-/* Round Counter */
-.round-counter {
-    text-align: center;
-    font-size: 0.75rem;
-    color: #cccccc;
-    font-weight: 300;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-}
 
-/* Responsive Design */
+/* Mobile Responsive Design */
 @media (max-width: 800px) {
+    body {
+        height: 100dvh;
+    }
+    
     .container {
-        padding: 1.5rem;
+        padding: 0.25rem;
+        height: 100dvh;
+    }
+    
+    .header {
+        margin-bottom: 0.125rem;
     }
     
     .title {
-        font-size: 1.25rem;
+        font-size: 1rem;
+        margin-bottom: 0.125rem;
+    }
+    
+    .subtitle {
+        font-size: 0.7rem;
     }
     
     .battle-container {
-        flex-direction: column;
-        gap: 1.5rem;
+        display: grid;
+        grid-template-rows: 38% 8rem 38%;
+        grid-template-columns: 1fr;
+        gap: 0;
+        height: calc(100dvh - 3rem);
+        position: relative;
+        align-items: stretch;
     }
     
-    .vs-divider {
-        order: 1;
-        margin: 1rem 0;
-        padding-top: 0;
-        min-width: 180px; /* Adjust for mobile */
+    .option-section {
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        width: 100%;
+        min-height: 0;
+        padding: 0.25rem;
     }
     
     .option-section:first-child {
-        order: 0;
+        grid-row: 1;
     }
     
     .option-section:last-child {
-        order: 2;
+        grid-row: 3;
+    }
+    
+    .option-label {
+        height: 1.5rem;
+        flex-shrink: 0;
+        margin-bottom: 0.25rem;
+    }
+    
+    .furniture-card {
+        flex-direction: row;
+        height: calc(100% - 3.5rem);
+        width: 100%;
+        flex: 1;
+        position: relative;
+        overflow: hidden;
     }
     
     .card-image-container {
-        height: 12rem;
+        width: 65%;
+        border-right: 1px solid #e5e5e5;
+        border-bottom: none;
     }
     
-    .card-emoji {
-        font-size: 4rem;
+    .card-content {
+        width: 35%;
+        padding: 0.5rem;
+    }
+    
+    .card-info {
+        margin-bottom: 0.375rem;
+    }
+    
+    .card-title {
+        font-size: 0.8rem;
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+    }
+    
+    .card-designer {
+        font-size: 0.7rem;
+        font-weight: 400;
+        margin-bottom: 0.25rem;
+    }
+    
+    .card-materials {
+        font-size: 0.65rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .card-description {
+        font-size: 0.65rem;
+        -webkit-line-clamp: 4;
+        margin-bottom: 0.375rem;
+    }
+    
+    .card-link {
+        font-size: 0.6rem;
+        margin-top: auto;
+    }
+    
+    .vs-divider {
+        grid-row: 2;
+        width: 60px;
+        height: 100%;
+        gap: 0.125rem;
+        z-index: 10;
+        background: transparent;
+        border-radius: 0;
+        padding: 0.25rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        justify-self: center;
+        flex-shrink: 0;
+    }
+    
+    .vs-badge {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.7rem;
+    }
+    
+    .continue-button {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.7rem;
+    }
+    
+    .ponder-message {
+        font-size: 0.6rem;
+        max-width: 120px;
+        height: 1.5rem;
+        margin-top: 0.125rem;
+    }
+    
+    
+    .controls {
+        margin-bottom: 0.25rem;
+        height: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    
+    .poll-results {
+        margin-top: 0.25rem;
+        height: 2.5rem;
+        margin-bottom: 0;
+        width: 100%;
+        position: relative;
+    }
+    
+    .poll-content {
+        padding: 0.1875rem;
+        height: 100%;
+        font-size: 0.7rem;
     }
     
     .winner-emoji {
-        font-size: 6rem;
+        font-size: 4rem;
     }
     
     .winner-card {
-        padding: 2rem;
+        padding: 1.5rem;
     }
     
     .winner-name {
-        font-size: 1.25rem;
+        font-size: 1rem;
+    }
+    
+    .start-card {
+        padding: 2rem;
+    }
+    
+    .start-title {
+        font-size: 1.5rem;
+    }
+    
+    .start-subtitle {
+        font-size: 0.875rem;
+    }
+    
+    .disclaimer {
+        padding: 1rem;
+        margin-bottom: 1.5rem;
     }
 }
 
 @media (max-width: 600px) {
     .container {
-        padding: 1rem;
+        padding: 0.125rem;
+    }
+    
+    .header {
+        margin-bottom: 0.0625rem;
     }
     
     .title {
-        font-size: 1rem;
+        font-size: 0.9rem;
+        margin-bottom: 0.125rem;
     }
     
     .subtitle {
-        font-size: 0.8rem;
+        font-size: 0.65rem;
+    }
+    
+    .battle-container {
+        grid-template-rows: 40% 7rem 40%;
+        gap: 0;
+        height: calc(100dvh - 2.5rem);
+    }
+    
+    .furniture-card {
+        height: calc(100% - 3rem);
+        width: 100%;
     }
     
     .card-image-container {
-        height: 10rem;
+        width: 70%;
     }
     
-    .card-emoji {
-        font-size: 3rem;
+    .card-content {
+        width: 30%;
+        padding: 0.375rem;
+    }
+    
+    .card-info {
+        margin-bottom: 0.25rem;
+    }
+    
+    .card-title {
+        font-size: 0.7rem;
+        font-weight: 600;
+        margin-bottom: 0.125rem;
+        line-height: 1.1;
+    }
+    
+    .card-designer {
+        font-size: 0.6rem;
+        font-weight: 400;
+        margin-bottom: 0.125rem;
+        line-height: 1.1;
+    }
+    
+    .card-materials {
+        font-size: 0.55rem;
+        margin-bottom: 0.125rem;
+        line-height: 1.1;
+    }
+    
+    .card-description {
+        font-size: 0.55rem;
+        -webkit-line-clamp: 5;
+        margin-bottom: 0.25rem;
+        line-height: 1.2;
+    }
+    
+    .card-link {
+        font-size: 0.55rem;
+        margin-top: auto;
+    }
+    
+    .vs-divider {
+        grid-row: 2;
+        width: 50px;
+        height: 100%;
+        gap: 0.0625rem;
+        z-index: 10;
+        background: transparent;
+        border-radius: 0;
+        padding: 0.1875rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        justify-self: center;
+        flex-shrink: 0;
+    }
+    
+    .vs-badge {
+        padding: 0.1875rem 0.375rem;
+        font-size: 0.6rem;
+    }
+    
+    .continue-button {
+        padding: 0.1875rem 0.375rem;
+        font-size: 0.6rem;
+    }
+    
+    .ponder-message {
+        display: none;
     }
     
     .winner-emoji {
-        font-size: 4rem;
+        font-size: 3rem;
     }
     
     .winner-card {
-        padding: 1.5rem;
+        padding: 1rem;
     }
     
     .winner-name {
-        font-size: 1rem;
+        font-size: 0.9rem;
     }
     
     .winner-title {
-        font-size: 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .start-card {
+        padding: 1.5rem;
+    }
+    
+    .start-title {
+        font-size: 1.25rem;
+    }
+    
+    .start-subtitle {
+        font-size: 0.8rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .disclaimer {
+        padding: 0.75rem;
+        margin-bottom: 1.25rem;
+    }
+    
+    .disclaimer p {
+        font-size: 0.8rem;
+    }
+    
+    .play-button {
+        padding: 0.75rem 1.5rem;
+        font-size: 0.8rem;
     }
 }

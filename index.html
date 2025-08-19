@@ -12,10 +12,22 @@
 </head>
 <body>
     <div class="container">
+        <!-- Start Screen -->
+        <div id="startScreen" class="start-screen">
+            <div class="start-card">
+                <h1 class="start-title">Design Showdown</h1>
+                <p class="start-subtitle">A furniture design voting game</p>
+                <div class="disclaimer">
+                    <p>This game is meant to promote fun discovery of the best and latest in design. Nothing replaces seeing and feeling these pieces in person. We encourage you to support all these artists and dive deeper into every piece that catches your eye.</p>
+                </div>
+                <button class="play-button" id="playButton">Play Now</button>
+            </div>
+        </div>
+
         <!-- Header -->
         <header class="header">
             <h1 class="title">Design Showdown</h1>
-            <p class="subtitle">Choose your preferred piece</p>
+            <p class="subtitle" id="subtitle">Choose your preferred piece</p>
         </header>
 
         <!-- Game Over Screen -->
@@ -29,7 +41,6 @@
                     <h3 class="winner-name" id="winnerName"></h3>
                     <p class="winner-designer" id="winnerDesigner"></p>
                     <p class="winner-materials" id="winnerMaterials"></p>
-                    <p class="winner-retailer" id="winnerRetailer"></p>
                 </div>
                 <div class="winner-details">
                     <p class="winner-description" id="winnerDescription"></p>
@@ -58,11 +69,10 @@
                                 <h3 class="card-title" id="leftTitle"></h3>
                                 <p class="card-designer" id="leftDesigner"></p>
                                 <p class="card-materials" id="leftMaterials"></p>
-                                <p class="card-retailer" id="leftRetailer"></p>
                             </div>
                             <p class="card-description" id="leftDescription"></p>
                             <a href="#" target="_blank" rel="noopener noreferrer" class="card-link" id="leftLink">
-                                View Details
+                                Learn More
                             </a>
                         </div>
                     </div>
@@ -88,7 +98,7 @@
                     <div class="vs-badge" id="vsBadge">vs</div>
                     <button class="continue-button hidden" id="continueButton">Continue</button>
                     <div class="ponder-message hidden" id="ponderMessage">
-                        Ponder for a few seconds before making your decision
+Take a good look at both options
                     </div>
                 </div>
 
@@ -106,11 +116,10 @@
                                 <h3 class="card-title" id="rightTitle"></h3>
                                 <p class="card-designer" id="rightDesigner"></p>
                                 <p class="card-materials" id="rightMaterials"></p>
-                                <p class="card-retailer" id="rightRetailer"></p>
                             </div>
                             <p class="card-description" id="rightDescription"></p>
                             <a href="#" target="_blank" rel="noopener noreferrer" class="card-link" id="rightLink">
-                                View Details
+                                Learn More
                             </a>
                         </div>
                     </div>
@@ -135,11 +144,6 @@
             <!-- Controls -->
             <div class="controls">
                 <div class="selection-prompt hidden" id="selectionPrompt">Make Your Selection</div>
-            </div>
-
-            <!-- Round Counter -->
-            <div class="round-counter">
-                <span>Round <span id="roundNumber">1</span> of 15</span>
             </div>
         </div>
     </div>

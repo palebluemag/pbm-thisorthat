@@ -16,15 +16,21 @@ const dbService = {
             
             if (error) throw error;
             
-            // Generate public URLs for images
+            // Handle image URLs - direct URLs or storage paths
             const productsWithImages = data.map((product) => {
                 if (product.image_path) {
-                    const { data: publicUrl } = supabase.storage
-                        .from('furniture-images')
-                        .getPublicUrl(product.image_path);
-                    
-                    if (publicUrl) {
-                        product.image_url = publicUrl.publicUrl;
+                    // Check if image_path is already a full URL
+                    if (product.image_path.startsWith('http://') || product.image_path.startsWith('https://')) {
+                        product.image_url = product.image_path;
+                    } else {
+                        // Treat as storage path
+                        const { data: publicUrl } = supabase.storage
+                            .from('furniture-images')
+                            .getPublicUrl(product.image_path);
+                        
+                        if (publicUrl) {
+                            product.image_url = publicUrl.publicUrl;
+                        }
                     }
                 }
                 return product;
@@ -336,6 +342,8 @@ let gameState = {
 
 // DOM elements
 const elements = {
+    startScreen: document.getElementById('startScreen'),
+    playButton: document.getElementById('playButton'),
     gameOverScreen: document.getElementById('gameOverScreen'),
     gameBoard: document.getElementById('gameBoard'),
     leftCard: document.getElementById('leftCard'),
@@ -344,14 +352,13 @@ const elements = {
     continueButton: document.getElementById('continueButton'),
     selectionPrompt: document.getElementById('selectionPrompt'),
     resetButton: document.getElementById('resetButton'),
-    roundNumber: document.getElementById('roundNumber'),
+    subtitle: document.getElementById('subtitle'),
     
     // Left card elements
     leftEmoji: document.getElementById('leftEmoji'),
     leftTitle: document.getElementById('leftTitle'),
     leftDesigner: document.getElementById('leftDesigner'),
     leftMaterials: document.getElementById('leftMaterials'),
-    leftRetailer: document.getElementById('leftRetailer'),
     leftDescription: document.getElementById('leftDescription'),
     leftLink: document.getElementById('leftLink'),
     leftPollResults: document.getElementById('leftPollResults'),
@@ -365,7 +372,6 @@ const elements = {
     rightTitle: document.getElementById('rightTitle'),
     rightDesigner: document.getElementById('rightDesigner'),
     rightMaterials: document.getElementById('rightMaterials'),
-    rightRetailer: document.getElementById('rightRetailer'),
     rightDescription: document.getElementById('rightDescription'),
     rightLink: document.getElementById('rightLink'),
     rightPollResults: document.getElementById('rightPollResults'),
@@ -379,7 +385,6 @@ const elements = {
     winnerName: document.getElementById('winnerName'),
     winnerDesigner: document.getElementById('winnerDesigner'),
     winnerMaterials: document.getElementById('winnerMaterials'),
-    winnerRetailer: document.getElementById('winnerRetailer'),
     winnerDescription: document.getElementById('winnerDescription'),
     winnerLink: document.getElementById('winnerLink'),
     
@@ -449,8 +454,9 @@ function updateDisplay() {
         return;
     }
     
-    // Update round number
-    elements.roundNumber.textContent = gameState.round;
+    // Update subtitle with round info
+    elements.subtitle.textContent = `Round ${gameState.round} of 15`;
+    elements.subtitle.className = 'subtitle round-info';
     
     // Update cards
     updateCard('left', gameState.currentPair[0]);
@@ -458,7 +464,7 @@ function updateDisplay() {
     
     // Update VS badge - always show 'vs'
     elements.vsBadge.textContent = 'vs';
-    elements.vsBadge.classList.remove('countdown');
+    elements.vsBadge.classList.remove('countdown', 'ponder-mode');
     
     // Update card states
     updateCardStates();
@@ -483,6 +489,13 @@ function updateDisplay() {
     elements.gameBoard.classList.remove('hidden');
 }
 
+// Truncate text to character limit
+function truncateText(text, limit) {
+    if (!text) return '';
+    if (text.length <= limit) return text;
+    return text.substring(0, limit).trim() + '...';
+}
+
 // Update individual card
 function updateCard(side, item) {
     const prefix = side === 'left' ? 'left' : 'right';
@@ -497,9 +510,9 @@ function updateCard(side, item) {
         const img = document.createElement('img');
         img.src = item.image_url;
         img.alt = item.name;
-        img.style.maxWidth = '100%';
-        img.style.maxHeight = '100%';
-        img.style.objectFit = 'contain';
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
         img.style.borderRadius = '4px';
         
         // Handle image load errors - fallback to emoji
@@ -515,11 +528,17 @@ function updateCard(side, item) {
         imageContainer.textContent = item.image || '🪑';
     }
     
-    elements[`${prefix}Title`].textContent = item.name;
-    elements[`${prefix}Designer`].textContent = item.designer || '';
-    elements[`${prefix}Materials`].textContent = item.materials || '';
-    elements[`${prefix}Retailer`].textContent = item.retailer || '';
-    elements[`${prefix}Description`].textContent = item.description || '';
+    // Apply character limits based on screen size
+    const isMobile = window.innerWidth <= 600;
+    const isTablet = window.innerWidth <= 800;
+    
+    const descriptionLimit = isMobile ? 200 : isTablet ? 400 : 500;
+    const materialsLimit = isMobile ? 40 : 50;
+    
+    elements[`${prefix}Title`].textContent = truncateText(item.name, 60);
+    elements[`${prefix}Designer`].textContent = truncateText(item.designer, 50);
+    elements[`${prefix}Materials`].textContent = truncateText(item.materials, materialsLimit);
+    elements[`${prefix}Description`].textContent = truncateText(item.description, descriptionLimit);
     elements[`${prefix}Link`].href = linkUrl;
 }
 
@@ -574,23 +593,52 @@ function startPonderTime() {
         clearTimeout(gameState.ponderTimer);
     }
     
-    // Show ponder message
-    elements.ponderMessage.classList.remove('hidden');
-    elements.ponderMessage.classList.add('show');
+    const isMobile = window.innerWidth <= 800;
+    
+    // Enable ponder mode visual cues
+    document.body.classList.add('ponder-mode');
+    elements.vsBadge.classList.add('ponder-mode');
+    elements.leftCard.classList.add('ponder-disabled');
+    elements.rightCard.classList.add('ponder-disabled');
+    
+    if (isMobile) {
+        // On mobile, replace VS badge text instead of showing ponder message
+        elements.vsBadge.textContent = 'Study Both';
+    } else {
+        // On desktop, show ponder message
+        elements.ponderMessage.classList.remove('hidden');
+        elements.ponderMessage.classList.add('show');
+    }
     
     // Hide message and unlock after 3 seconds
     gameState.ponderTimer = setTimeout(() => {
-        elements.ponderMessage.classList.remove('show');
+        // Remove ponder mode visual cues
+        document.body.classList.remove('ponder-mode');
+        elements.vsBadge.classList.remove('ponder-mode');
+        elements.leftCard.classList.remove('ponder-disabled');
+        elements.rightCard.classList.remove('ponder-disabled');
         
-        // Wait for fade out animation, then hide and unlock
-        setTimeout(() => {
-            elements.ponderMessage.classList.add('hidden');
-            gameState.isLocked = false;
+        // Restore VS badge text
+        elements.vsBadge.textContent = 'vs';
+        
+        if (!isMobile) {
+            elements.ponderMessage.classList.remove('show');
             
-            // Instead of full updateDisplay(), just update what's needed
+            // Wait for fade out animation, then hide and unlock
+            setTimeout(() => {
+                elements.ponderMessage.classList.add('hidden');
+                gameState.isLocked = false;
+                
+                // Instead of full updateDisplay(), just update what's needed
+                updateCardStates();
+                showSelectionPrompt();
+            }, 300);
+        } else {
+            // On mobile, unlock immediately
+            gameState.isLocked = false;
             updateCardStates();
             showSelectionPrompt();
-        }, 800); // Match CSS transition duration
+        }
     }, 3000);
 }
 
@@ -600,23 +648,33 @@ async function handleChoice(chosenItem) {
         return;
     }
     
+    // Immediate UI feedback
     gameState.chosenItem = chosenItem;
+    gameState.isLocked = true;
+    updateCardStates();
     
-    // Record the choice in database
+    // Record the choice in database (async in background)
     const loserItem = gameState.currentPair.find(item => item !== chosenItem);
-    await dbService.recordUserChoice(
+    const recordPromise = dbService.recordUserChoice(
         gameState.sessionId,
         gameState.round,
         chosenItem.id,
         loserItem.id
     );
     
-    // Get real head-to-head poll percentages from database
+    // Get real head-to-head poll percentages from database (async in background)
+    const statsPromise = dbService.getHeadToHeadStats(
+        gameState.currentPair[0].id,
+        gameState.currentPair[1].id
+    );
+    
+    // Show results immediately, update with data when ready
+    gameState.showResults = true;
+    updateDisplay();
+    
+    // Handle async operations
     try {
-        const headToHeadStats = await dbService.getHeadToHeadStats(
-            gameState.currentPair[0].id,
-            gameState.currentPair[1].id
-        );
+        const [, headToHeadStats] = await Promise.all([recordPromise, statsPromise]);
         
         if (headToHeadStats.hasEnoughData) {
             gameState.pollResults = {
@@ -632,16 +690,17 @@ async function handleChoice(chosenItem) {
             };
             console.log('Not enough battles between these products, hiding percentages');
         }
+        
+        // Update poll results with real data
+        showPollResults();
     } catch (error) {
         console.error('Error getting head-to-head stats:', error);
         gameState.pollResults = {
             left: null,
             right: null
         };
+        showPollResults();
     }
-    
-    gameState.showResults = true;
-    updateDisplay();
 }
 
 // Show poll results
@@ -795,9 +854,9 @@ function showGameOverScreen() {
         const img = document.createElement('img');
         img.src = gameState.winner.image_url;
         img.alt = gameState.winner.name;
-        img.style.maxWidth = '100%';
-        img.style.maxHeight = '100%';
-        img.style.objectFit = 'contain';
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
         img.style.borderRadius = '4px';
         
         // Handle image load errors - fallback to emoji
@@ -813,11 +872,10 @@ function showGameOverScreen() {
         elements.winnerEmoji.textContent = gameState.winner.image || '🪑';
     }
     
-    elements.winnerName.textContent = gameState.winner.name;
-    elements.winnerDesigner.textContent = gameState.winner.designer || '';
-    elements.winnerMaterials.textContent = gameState.winner.materials || '';
-    elements.winnerRetailer.textContent = gameState.winner.retailer || '';
-    elements.winnerDescription.textContent = gameState.winner.description || '';
+    elements.winnerName.textContent = truncateText(gameState.winner.name, 60);
+    elements.winnerDesigner.textContent = truncateText(gameState.winner.designer, 50);
+    elements.winnerMaterials.textContent = truncateText(gameState.winner.materials, 80);
+    elements.winnerDescription.textContent = truncateText(gameState.winner.description, 300);
     elements.winnerLink.href = linkUrl;
 }
 
@@ -826,10 +884,26 @@ function resetGame() {
     if (gameState.ponderTimer) {
         clearTimeout(gameState.ponderTimer);
     }
+    // Reset subtitle
+    elements.subtitle.textContent = 'Choose your preferred piece';
+    elements.subtitle.className = 'subtitle';
+    // Remove any ponder mode states
+    document.body.classList.remove('ponder-mode');
+    elements.vsBadge.classList.remove('ponder-mode');
+    elements.leftCard.classList.remove('ponder-disabled');
+    elements.rightCard.classList.remove('ponder-disabled');
+    
+    initializeGame();
+}
+
+// Start game
+function startGame() {
+    elements.startScreen.classList.add('hidden');
     initializeGame();
 }
 
 // Event listeners
+elements.playButton.addEventListener('click', startGame);
 elements.leftCard.addEventListener('click', () => handleChoice(gameState.currentPair[0]));
 elements.rightCard.addEventListener('click', () => handleChoice(gameState.currentPair[1]));
 elements.continueButton.addEventListener('click', moveToNextRound);
@@ -839,5 +913,9 @@ elements.resetButton.addEventListener('click', resetGame);
 elements.leftLink.addEventListener('click', (e) => e.stopPropagation());
 elements.rightLink.addEventListener('click', (e) => e.stopPropagation());
 
-// Initialize game on page load
-document.addEventListener('DOMContentLoaded', initializeGame);
+// Show start screen on page load
+document.addEventListener('DOMContentLoaded', () => {
+    elements.startScreen.classList.remove('hidden');
+    elements.gameBoard.classList.add('hidden');
+    elements.gameOverScreen.classList.add('hidden');
+});
