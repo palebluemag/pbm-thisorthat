@@ -328,6 +328,7 @@ const fallbackFurnitureItems = [
 let gameState = {
     gamePool: [],
     currentPair: [],
+    usedItems: [],
     round: 1,
     gameOver: false,
     winner: null,
@@ -413,6 +414,7 @@ async function initializeGame() {
         
         gameState.gamePool = selected;
         gameState.currentPair = [selected[0], selected[1]];
+        gameState.usedItems = [selected[0], selected[1]];
         gameState.round = 1;
         gameState.gameOver = false;
         gameState.winner = null;
@@ -433,6 +435,7 @@ async function initializeGame() {
         
         gameState.gamePool = selected;
         gameState.currentPair = [selected[0], selected[1]];
+        gameState.usedItems = [selected[0], selected[1]];
         gameState.round = 1;
         gameState.gameOver = false;
         gameState.winner = null;
@@ -528,17 +531,10 @@ function updateCard(side, item) {
         imageContainer.textContent = item.image || '🪑';
     }
     
-    // Apply character limits based on screen size
-    const isMobile = window.innerWidth <= 600;
-    const isTablet = window.innerWidth <= 800;
-    
-    const descriptionLimit = isMobile ? 200 : isTablet ? 400 : 500;
-    const materialsLimit = isMobile ? 40 : 50;
-    
     elements[`${prefix}Title`].textContent = truncateText(item.name, 60);
     elements[`${prefix}Designer`].textContent = truncateText(item.designer, 50);
-    elements[`${prefix}Materials`].textContent = truncateText(item.materials, materialsLimit);
-    elements[`${prefix}Description`].textContent = truncateText(item.description, descriptionLimit);
+    elements[`${prefix}Materials`].textContent = item.materials || '';
+    elements[`${prefix}Description`].textContent = truncateText(item.description, 250);
     elements[`${prefix}Link`].href = linkUrl;
 }
 
@@ -814,9 +810,14 @@ function moveToNextRound() {
         return;
     }
     
-    // Get next challenger from remaining pool
-    const usedItems = new Set([gameState.chosenItem, gameState.currentPair.find(item => item !== gameState.chosenItem)]);
-    const remainingPool = gameState.gamePool.filter(item => !usedItems.has(item));
+    // Add the loser to used items (winner stays for next round)
+    const loserItem = gameState.currentPair.find(item => item !== gameState.chosenItem);
+    if (!gameState.usedItems.includes(loserItem)) {
+        gameState.usedItems.push(loserItem);
+    }
+    
+    // Get next challenger from remaining pool (exclude all used items)
+    const remainingPool = gameState.gamePool.filter(item => !gameState.usedItems.includes(item));
     
     if (remainingPool.length === 0) {
         gameState.gameOver = true;
@@ -826,6 +827,9 @@ function moveToNextRound() {
     }
     
     const nextChallenger = remainingPool[Math.floor(Math.random() * remainingPool.length)];
+    
+    // Add the new challenger to used items
+    gameState.usedItems.push(nextChallenger);
     
     // Winner stays on the left, challenger on the right
     gameState.currentPair = [gameState.chosenItem, nextChallenger];
@@ -843,6 +847,7 @@ function moveToNextRound() {
 function showGameOverScreen() {
     elements.gameOverScreen.classList.remove('hidden');
     elements.gameBoard.classList.add('hidden');
+    document.body.classList.add('winner-screen');
     
     // Update winner information
     const linkUrl = gameState.winner.product_url || gameState.winner.link || '#';
@@ -874,8 +879,8 @@ function showGameOverScreen() {
     
     elements.winnerName.textContent = truncateText(gameState.winner.name, 60);
     elements.winnerDesigner.textContent = truncateText(gameState.winner.designer, 50);
-    elements.winnerMaterials.textContent = truncateText(gameState.winner.materials, 80);
-    elements.winnerDescription.textContent = truncateText(gameState.winner.description, 300);
+    elements.winnerMaterials.textContent = gameState.winner.materials || '';
+    elements.winnerDescription.textContent = truncateText(gameState.winner.description, 250);
     elements.winnerLink.href = linkUrl;
 }
 
@@ -887,8 +892,8 @@ function resetGame() {
     // Reset subtitle
     elements.subtitle.textContent = 'Choose your preferred piece';
     elements.subtitle.className = 'subtitle';
-    // Remove any ponder mode states
-    document.body.classList.remove('ponder-mode');
+    // Remove any mode states
+    document.body.classList.remove('ponder-mode', 'winner-screen');
     elements.vsBadge.classList.remove('ponder-mode');
     elements.leftCard.classList.remove('ponder-disabled');
     elements.rightCard.classList.remove('ponder-disabled');
@@ -899,6 +904,7 @@ function resetGame() {
 // Start game
 function startGame() {
     elements.startScreen.classList.add('hidden');
+    document.body.classList.remove('winner-screen');
     initializeGame();
 }
 
