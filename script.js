@@ -338,6 +338,7 @@ let gameState = {
     showResults: false,
     pollResults: { left: 0, right: 0 },
     ponderTimer: null,
+    autoContinueTimer: null,
     sessionId: null
 };
 
@@ -461,9 +462,22 @@ function updateDisplay() {
     elements.subtitle.textContent = `Round ${gameState.round} of 15`;
     elements.subtitle.className = 'subtitle round-info';
     
-    // Update cards
+    // Update cards with smooth transition for subsequent rounds
+    if (gameState.round > 1) {
+        elements.leftCard.classList.add('game-start-fade');
+        elements.rightCard.classList.add('game-start-fade');
+    }
+    
     updateCard('left', gameState.currentPair[0]);
     updateCard('right', gameState.currentPair[1]);
+    
+    // Fade in cards for subsequent rounds
+    if (gameState.round > 1) {
+        setTimeout(() => {
+            elements.leftCard.classList.remove('game-start-fade');
+            elements.rightCard.classList.remove('game-start-fade');
+        }, 200);
+    }
     
     // Update VS badge - always show 'vs'
     elements.vsBadge.textContent = 'vs';
@@ -594,15 +608,22 @@ function startPonderTime() {
     elements.leftCard.classList.add('ponder-disabled');
     elements.rightCard.classList.add('ponder-disabled');
     
-    // Show ponder message on both mobile and desktop
+    // Show ponder message with smooth fade in
     elements.ponderMessage.classList.remove('hidden');
-    elements.ponderMessage.classList.add('show');
+    elements.ponderMessage.classList.add('ponder-fade-in');
     
-    // Start countdown timer
+    // Start countdown timer with smooth fade in
     let countdown = 3;
     elements.vsBadge.classList.remove('stable');
     elements.vsBadge.textContent = countdown;
-    elements.vsBadge.classList.add('countdown');
+    elements.vsBadge.classList.add('countdown', 'countdown-fade-in');
+    
+    // Smooth fade in both elements with longer delay
+    setTimeout(() => {
+        elements.ponderMessage.classList.remove('ponder-fade-in');
+        elements.ponderMessage.classList.add('show');
+        elements.vsBadge.classList.remove('countdown-fade-in');
+    }, 500);
     
     const countdownInterval = setInterval(() => {
         countdown--;
@@ -613,25 +634,32 @@ function startPonderTime() {
             
             // Remove ponder mode visual cues
             document.body.classList.remove('ponder-mode');
-            elements.vsBadge.classList.remove('countdown');
             elements.leftCard.classList.remove('ponder-disabled');
             elements.rightCard.classList.remove('ponder-disabled');
             
-            // Restore VS badge text
-            elements.vsBadge.textContent = 'vs';
-            
-            // Hide ponder message
+            // Start fade out of VS badge and ponder message simultaneously
+            elements.vsBadge.classList.add('fade-out');
             elements.ponderMessage.classList.remove('show');
             
-            // Wait for fade out animation, then hide and unlock
+            // Wait for fade out, then change text and fade back in very slowly
             setTimeout(() => {
                 elements.ponderMessage.classList.add('hidden');
+                
+                // Change VS badge content while it's invisible
+                elements.vsBadge.classList.remove('countdown');
+                elements.vsBadge.textContent = 'vs';
+                
+                // Wait longer before fading VS badge back in for smoother appearance
+                setTimeout(() => {
+                    elements.vsBadge.classList.remove('fade-out');
+                }, 300);
+                
                 gameState.isLocked = false;
                 
                 // Update what's needed
                 updateCardStates();
                 showSelectionPrompt();
-            }, 300);
+            }, 800);
         }
     }, 1000);
     
@@ -641,22 +669,29 @@ function startPonderTime() {
         
         // Remove ponder mode visual cues
         document.body.classList.remove('ponder-mode');
-        elements.vsBadge.classList.remove('countdown');
         elements.leftCard.classList.remove('ponder-disabled');
         elements.rightCard.classList.remove('ponder-disabled');
         
-        // Restore VS badge text
-        elements.vsBadge.textContent = 'vs';
-        
-        // Hide ponder message
+        // Start fade out of VS badge and ponder message simultaneously
+        elements.vsBadge.classList.add('fade-out');
         elements.ponderMessage.classList.remove('show');
         
         setTimeout(() => {
             elements.ponderMessage.classList.add('hidden');
+            
+            // Change VS badge content while it's invisible
+            elements.vsBadge.classList.remove('countdown');
+            elements.vsBadge.textContent = 'vs';
+            
+            // Wait longer before fading VS badge back in for smoother appearance
+            setTimeout(() => {
+                elements.vsBadge.classList.remove('fade-out');
+            }, 300);
+            
             gameState.isLocked = false;
             updateCardStates();
             showSelectionPrompt();
-        }, 300);
+        }, 800);
     }, 3000);
 }
 
@@ -711,6 +746,9 @@ async function handleChoice(chosenItem) {
         
         // Update poll results with real data
         showPollResults();
+        
+        // Start auto-continue timer
+        startAutoContinueTimer();
     } catch (error) {
         console.error('Error getting head-to-head stats:', error);
         gameState.pollResults = {
@@ -718,7 +756,27 @@ async function handleChoice(chosenItem) {
             right: null
         };
         showPollResults();
+        
+        // Start auto-continue timer
+        startAutoContinueTimer();
     }
+}
+
+// Start auto-continue timer
+function startAutoContinueTimer() {
+    // Clear any existing timer
+    if (gameState.autoContinueTimer) {
+        clearTimeout(gameState.autoContinueTimer);
+    }
+    
+    gameState.autoContinueTimer = setTimeout(() => {
+        if (gameState.showResults && !gameState.gameOver) {
+            // Hide continue button and move to next round
+            elements.continueButton.classList.remove('show');
+            elements.continueButton.classList.add('hidden');
+            moveToNextRound();
+        }
+    }, 8000);
 }
 
 // Show poll results
@@ -742,19 +800,10 @@ function showPollResults() {
     
     if (gameState.pollResults.left !== null) {
         elements.leftPollPercentage.textContent = `${gameState.pollResults.left}%`;
-        // Use CSS custom property for animation target
-        elements.leftPollFill.style.setProperty('--target-width', `${gameState.pollResults.left}%`);
-        elements.leftPollFill.classList.remove('animate');
-        elements.leftPollFill.style.width = '0%';
-        
-        requestAnimationFrame(() => {
-            elements.leftPollFill.classList.add('animate');
-        });
-        
+        elements.leftPollFill.style.width = `${gameState.pollResults.left}%`;
         elements.leftPollDescription.textContent = `${gameState.pollResults.left}% chose this`;
     } else {
         elements.leftPollPercentage.textContent = 'No Data Yet';
-        elements.leftPollFill.classList.remove('animate');
         elements.leftPollFill.style.width = '0%';
         elements.leftPollDescription.textContent = leftChosen ? 'You\'re the pioneer!' : 'You\'re the first to vote on this matchup';
     }
@@ -770,19 +819,10 @@ function showPollResults() {
     
     if (gameState.pollResults.right !== null) {
         elements.rightPollPercentage.textContent = `${gameState.pollResults.right}%`;
-        // Use CSS custom property for animation target
-        elements.rightPollFill.style.setProperty('--target-width', `${gameState.pollResults.right}%`);
-        elements.rightPollFill.classList.remove('animate');
-        elements.rightPollFill.style.width = '0%';
-        
-        requestAnimationFrame(() => {
-            elements.rightPollFill.classList.add('animate');
-        });
-        
+        elements.rightPollFill.style.width = `${gameState.pollResults.right}%`;
         elements.rightPollDescription.textContent = `${gameState.pollResults.right}% chose this`;
     } else {
         elements.rightPollPercentage.textContent = 'No Data Yet';
-        elements.rightPollFill.classList.remove('animate');
         elements.rightPollFill.style.width = '0%';
         elements.rightPollDescription.textContent = rightChosen ? 'You\'re the pioneer!' : 'You\'re the first to vote on this matchup';
     }
@@ -811,11 +851,14 @@ function hidePollResults() {
 function showContinueButton() {
     // Hide VS badge
     elements.vsBadge.classList.add('hidden');
-    // Show continue button
+    // Show continue button with smooth fade in
     elements.continueButton.classList.remove('hidden');
+    elements.continueButton.classList.add('continue-fade-in');
+    
     setTimeout(() => {
+        elements.continueButton.classList.remove('continue-fade-in');
         elements.continueButton.classList.add('show');
-    }, 50);
+    }, 500);
 }
 
 // Hide continue button
@@ -846,6 +889,12 @@ function hideSelectionPrompt() {
 
 // Move to next round
 function moveToNextRound() {
+    // Clear auto-continue timer
+    if (gameState.autoContinueTimer) {
+        clearTimeout(gameState.autoContinueTimer);
+        gameState.autoContinueTimer = null;
+    }
+    
     // Check if game should end
     if (gameState.round >= 15) {
         gameState.gameOver = true;
@@ -933,6 +982,9 @@ function resetGame() {
     if (gameState.ponderTimer) {
         clearTimeout(gameState.ponderTimer);
     }
+    if (gameState.autoContinueTimer) {
+        clearTimeout(gameState.autoContinueTimer);
+    }
     // Reset subtitle
     elements.subtitle.textContent = 'Choose your preferred piece';
     elements.subtitle.className = 'subtitle';
@@ -953,14 +1005,40 @@ function resetGame() {
 function startGame() {
     elements.startScreen.classList.add('hidden');
     document.body.classList.remove('winner-screen');
+    
+    // Initialize game first
     initializeGame();
+    
+    // Set up initial fade state after initialization
+    elements.leftCard.classList.add('game-start-fade');
+    elements.rightCard.classList.add('game-start-fade');
+    elements.gameBoard.classList.add('initial-fade');
+    
+    // Show game board
+    elements.gameBoard.classList.remove('hidden');
+    
+    // Start smooth fade-in after a brief moment
+    setTimeout(() => {
+        elements.gameBoard.classList.remove('initial-fade');
+        
+        // Both cards fade in together after game board is visible
+        setTimeout(() => {
+            elements.leftCard.classList.remove('game-start-fade');
+            elements.rightCard.classList.remove('game-start-fade');
+        }, 300);
+    }, 200);
 }
 
 // Event listeners
 elements.playButton.addEventListener('click', startGame);
 elements.leftCard.addEventListener('click', () => handleChoice(gameState.currentPair[0]));
 elements.rightCard.addEventListener('click', () => handleChoice(gameState.currentPair[1]));
-elements.continueButton.addEventListener('click', moveToNextRound);
+elements.continueButton.addEventListener('click', () => {
+    // Hide continue button immediately to prevent jump
+    elements.continueButton.classList.remove('show');
+    elements.continueButton.classList.add('hidden');
+    moveToNextRound();
+});
 elements.resetButton.addEventListener('click', resetGame);
 
 // Prevent link clicks from triggering card selection
