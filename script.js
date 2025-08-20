@@ -459,7 +459,7 @@ function updateDisplay() {
     }
     
     // Update subtitle with round info
-    elements.subtitle.textContent = `Round ${gameState.round} of 15`;
+    elements.subtitle.textContent = `Round ${gameState.round} of 10`;
     elements.subtitle.className = 'subtitle round-info';
     
     // Update cards with smooth transition for subsequent rounds
@@ -896,7 +896,7 @@ function moveToNextRound() {
     }
     
     // Check if game should end
-    if (gameState.round >= 15) {
+    if (gameState.round >= 10) {
         gameState.gameOver = true;
         gameState.winner = gameState.chosenItem;
         updateDisplay();
