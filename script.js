@@ -919,9 +919,31 @@ elements.resetButton.addEventListener('click', resetGame);
 elements.leftLink.addEventListener('click', (e) => e.stopPropagation());
 elements.rightLink.addEventListener('click', (e) => e.stopPropagation());
 
-// Show start screen on page load
+// Mobile menu functionality
 document.addEventListener('DOMContentLoaded', () => {
     elements.startScreen.classList.remove('hidden');
     elements.gameBoard.classList.add('hidden');
     elements.gameOverScreen.classList.add('hidden');
+    
+    // Mobile menu toggle
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const mobileMenuClose = document.getElementById('mobileMenuClose');
+    
+    if (mobileMenuToggle && mobileMenu && mobileMenuClose) {
+        mobileMenuToggle.addEventListener('click', () => {
+            mobileMenu.classList.add('is-open');
+        });
+        
+        mobileMenuClose.addEventListener('click', () => {
+            mobileMenu.classList.remove('is-open');
+        });
+        
+        // Close menu when clicking outside
+        mobileMenu.addEventListener('click', (e) => {
+            if (e.target === mobileMenu) {
+                mobileMenu.classList.remove('is-open');
+            }
+        });
+    }
 });
