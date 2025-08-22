@@ -1,3 +1,6 @@
+// Debug: Check if script is loading
+console.log('Script started loading...');
+
 // Supabase configuration
 const SUPABASE_URL = 'https://guxqqxrrpvrrboiinens.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_ng4WrHmBMatzMMzyrpQuXw_4DzuZ6a8';
@@ -5,10 +8,17 @@ const SUPABASE_ANON_KEY = 'sb_publishable_ng4WrHmBMatzMMzyrpQuXw_4DzuZ6a8';
 // Initialize Supabase client
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// Game configuration
+const gameConfig = {
+    currentTheme: 'Table Lamps', // Change this to set the current theme
+    currentCategory: 'Table Lamp' // Change this to filter by category (e.g., 'Chairs', 'Tables', 'Lighting', etc.)
+};
+
 // Database service functions
 const dbService = {
-    async fetchActiveProducts() {
+    async fetchActiveProducts(category = null) {
         try {
+            // First, get all active products
             const { data, error } = await supabase
                 .from('products')
                 .select('*')
@@ -16,8 +26,33 @@ const dbService = {
             
             if (error) throw error;
             
+            // If no category filter, return all products
+            if (!category) {
+                return data;
+            }
+            
+            // Filter client-side to handle JSON formatting issues
+            const filteredData = data.filter(product => {
+                if (!product.category) return false;
+                
+                try {
+                    // Handle both string and already-parsed JSON
+                    let categories = typeof product.category === 'string' 
+                        ? JSON.parse(product.category) 
+                        : product.category;
+                    
+                    return Array.isArray(categories) && categories.includes(category);
+                } catch (e) {
+                    console.log('Error parsing category for product:', product.id, product.category);
+                    return false;
+                }
+            });
+            
+            // Use filtered data instead of original data
+            const productsToProcess = filteredData;
+            
             // Handle image URLs - direct URLs or storage paths
-            const productsWithImages = data.map((product) => {
+            const productsWithImages = productsToProcess.map((product) => {
                 if (product.image_path) {
                     // Check if image_path is already a full URL
                     if (product.image_path.startsWith('http://') || product.image_path.startsWith('https://')) {
@@ -348,6 +383,7 @@ const elements = {
     playButton: document.getElementById('playButton'),
     gameOverScreen: document.getElementById('gameOverScreen'),
     gameBoard: document.getElementById('gameBoard'),
+    gameTheme: document.getElementById('gameTheme'),
     leftCard: document.getElementById('leftCard'),
     rightCard: document.getElementById('rightCard'),
     vsBadge: document.getElementById('vsBadge'),
@@ -400,8 +436,13 @@ async function initializeGame() {
         // Generate new session ID
         gameState.sessionId = generateSessionId();
         
-        // Fetch products from Supabase
-        let products = await dbService.fetchActiveProducts();
+        // Update theme display
+        if (elements.gameTheme) {
+            elements.gameTheme.textContent = `This Game's Theme: ${gameConfig.currentTheme}`;
+        }
+        
+        // Fetch products from Supabase using current category filter
+        let products = await dbService.fetchActiveProducts(gameConfig.currentCategory);
         
         // Fallback to hardcoded data if database fails
         if (!products || products.length === 0) {
@@ -1045,11 +1086,26 @@ elements.resetButton.addEventListener('click', resetGame);
 elements.leftLink.addEventListener('click', (e) => e.stopPropagation());
 elements.rightLink.addEventListener('click', (e) => e.stopPropagation());
 
+// Set theme display function
+function updateThemeDisplay() {
+    const themeElement = document.getElementById('gameTheme');
+    if (themeElement) {
+        const themeText = `This Game's Theme: ${gameConfig.currentTheme}`;
+        themeElement.textContent = themeText;
+    }
+}
+
 // Mobile menu functionality
 document.addEventListener('DOMContentLoaded', () => {
     elements.startScreen.classList.remove('hidden');
     elements.gameBoard.classList.add('hidden');
     elements.gameOverScreen.classList.add('hidden');
+    
+    // Set theme display on page load
+    updateThemeDisplay();
+    
+    // Also try setting it after a brief delay in case there's a timing issue
+    setTimeout(updateThemeDisplay, 100);
     
     // Mobile menu toggle
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');

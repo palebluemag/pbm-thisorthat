@@ -290,7 +290,15 @@ body.ponder-mode {
     font-size: 14px;
     color: #636363;
     font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.game-theme {
+    font-size: 15px;
+    color: #222;
+    font-weight: 700;
     margin-bottom: 2rem;
+    font-style: normal;
 }
 
 .disclaimer {
