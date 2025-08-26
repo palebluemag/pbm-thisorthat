@@ -1451,9 +1451,8 @@ body.ponder-mode {
 }
 
 .preview-row .furniture-card {
-    flex-direction: column;
-    height: min(45vh, 500px);
-    min-height: 300px;
+    flex: 1;
+    max-width: 500px;
     cursor: default;
 }
 
