@@ -1092,13 +1092,14 @@ function displayPreviewProducts(products) {
     });
 }
 
-// Create individual product element for preview
+// Create individual product element for preview (matches game card exactly)
 function createPreviewProductElement(product) {
     const productDiv = document.createElement('div');
     productDiv.className = 'preview-product';
     
     const linkUrl = product.product_url || product.link || '#';
     
+    // Create the same structure as updateCard function in the game
     productDiv.innerHTML = `
         <div class="preview-image">
             ${product.image_url 
@@ -1108,10 +1109,12 @@ function createPreviewProductElement(product) {
             }
         </div>
         <div class="preview-content">
-            <h3 class="preview-product-name">${truncateText(product.name, 60)}</h3>
-            <p class="preview-product-designer">${truncateText(product.designer, 50)}</p>
-            <p class="preview-product-materials">${product.materials || ''}</p>
-            <p class="preview-product-description">${truncateText(product.description, 200)}</p>
+            <div class="preview-product-info">
+                <h3 class="preview-product-name">${truncateText(product.name, 60)}</h3>
+                <p class="preview-product-designer">${truncateText(product.designer, 50)}</p>
+                <p class="preview-product-materials">${product.materials || ''}</p>
+            </div>
+            <p class="preview-product-description">${truncateText(product.description, 250)}</p>
             <a href="${linkUrl}" target="_blank" rel="noopener noreferrer" class="preview-product-link">
                 Learn More
             </a>
