@@ -1475,7 +1475,8 @@ body.ponder-mode {
     }
     
     .preview-row .furniture-card {
-        max-width: unset;
+        width: unset;
+        min-width: unset;
     }
     
     /* furniture-card mobile styles automatically apply to .preview-row .furniture-card */
