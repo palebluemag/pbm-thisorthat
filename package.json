@@ -1,0 +1,16 @@
+{
+  "name": "pbm-thisorthat",
+  "version": "1.0.0",
+  "description": "Design Showdown - A furniture design voting game",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'Static build - no build step needed'",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.38.0"
+  },
+  "devDependencies": {
+    "vercel": "^32.0.0"
+  }
+}

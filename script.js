@@ -1,12 +1,8 @@
 // Debug: Check if script is loading
 console.log('Script started loading...');
 
-// Supabase configuration
-const SUPABASE_URL = 'https://guxqqxrrpvrrboiinens.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_ng4WrHmBMatzMMzyrpQuXw_4DzuZ6a8';
-
-// Initialize Supabase client
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// API configuration
+const API_BASE_URL = window.location.origin;
 
 // Game configuration
 const gameConfig = {
@@ -14,64 +10,22 @@ const gameConfig = {
     currentCategory: 'Table Lamp' // Change this to filter by category (e.g., 'Chairs', 'Tables', 'Lighting', etc.)
 };
 
-// Database service functions
+// API service functions
 const dbService = {
     async fetchActiveProducts(category = null) {
         try {
-            // First, get all active products
-            const { data, error } = await supabase
-                .from('products')
-                .select('*')
-                .eq('is_active', true);
+            const url = category 
+                ? `${API_BASE_URL}/api/products?category=${encodeURIComponent(category)}`
+                : `${API_BASE_URL}/api/products`;
             
-            if (error) throw error;
+            const response = await fetch(url);
             
-            // If no category filter, return all products
-            if (!category) {
-                return data;
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
             
-            // Filter client-side to handle JSON formatting issues
-            const filteredData = data.filter(product => {
-                if (!product.category) return false;
-                
-                try {
-                    // Handle both string and already-parsed JSON
-                    let categories = typeof product.category === 'string' 
-                        ? JSON.parse(product.category) 
-                        : product.category;
-                    
-                    return Array.isArray(categories) && categories.includes(category);
-                } catch (e) {
-                    console.log('Error parsing category for product:', product.id, product.category);
-                    return false;
-                }
-            });
-            
-            // Use filtered data instead of original data
-            const productsToProcess = filteredData;
-            
-            // Handle image URLs - direct URLs or storage paths
-            const productsWithImages = productsToProcess.map((product) => {
-                if (product.image_path) {
-                    // Check if image_path is already a full URL
-                    if (product.image_path.startsWith('http://') || product.image_path.startsWith('https://')) {
-                        product.image_url = product.image_path;
-                    } else {
-                        // Treat as storage path
-                        const { data: publicUrl } = supabase.storage
-                            .from('furniture-images')
-                            .getPublicUrl(product.image_path);
-                        
-                        if (publicUrl) {
-                            product.image_url = publicUrl.publicUrl;
-                        }
-                    }
-                }
-                return product;
-            });
-            
-            return productsWithImages;
+            const data = await response.json();
+            return data.products;
         } catch (error) {
             console.error('Error fetching products:', error);
             return [];
@@ -80,16 +34,22 @@ const dbService = {
 
     async recordUserChoice(sessionId, roundNumber, winnerId, loserId) {
         try {
-            const { error } = await supabase
-                .from('user_choices')
-                .insert({
-                    session_id: sessionId,
-                    round_number: roundNumber,
-                    winner_id: winnerId,
-                    loser_id: loserId
-                });
-            
-            if (error) throw error;
+            const response = await fetch(`${API_BASE_URL}/api/vote`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    sessionId,
+                    roundNumber,
+                    winnerId,
+                    loserId
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
         } catch (error) {
             console.error('Error recording user choice:', error);
         }
@@ -97,54 +57,20 @@ const dbService = {
 
     async getHeadToHeadStats(productA_id, productB_id) {
         try {
-            // Query for battles where productA won against productB
-            const { data: aWins, error: aError } = await supabase
-                .from('user_choices')
-                .select('id')
-                .eq('winner_id', productA_id)
-                .eq('loser_id', productB_id);
+            const response = await fetch(
+                `${API_BASE_URL}/api/stats?productA_id=${productA_id}&productB_id=${productB_id}`
+            );
 
-            // Query for battles where productB won against productA  
-            const { data: bWins, error: bError } = await supabase
-                .from('user_choices')
-                .select('id')
-                .eq('winner_id', productB_id)
-                .eq('loser_id', productA_id);
-
-            if (aError || bError) {
-                console.error('Supabase query error:', aError || bError);
-                throw aError || bError;
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            const productA_wins = aWins?.length || 0;
-            const productB_wins = bWins?.length || 0;
-            const totalBattles = productA_wins + productB_wins;
-
+            const data = await response.json();
+            
             console.log(`Head-to-head stats: Product ${productA_id} vs ${productB_id}`);
-            console.log(`Product A wins: ${productA_wins}, Product B wins: ${productB_wins}, Total: ${totalBattles}`);
-
-            // Minimum threshold before showing real data
-            const MIN_BATTLES = 2;
+            console.log(`Product A: ${data.productA_percentage}%, Product B: ${data.productB_percentage}%, Total: ${data.totalBattles}`);
             
-            if (totalBattles < MIN_BATTLES) {
-                return {
-                    productA_percentage: null,
-                    productB_percentage: null,
-                    totalBattles,
-                    isRealData: false,
-                    hasEnoughData: false
-                };
-            }
-
-            const productA_percentage = Math.round((productA_wins / totalBattles) * 100);
-            
-            return {
-                productA_percentage,
-                productB_percentage: 100 - productA_percentage,
-                totalBattles,
-                isRealData: true,
-                hasEnoughData: true
-            };
+            return data;
         } catch (error) {
             console.error('Error getting head-to-head stats:', error);
             return {
