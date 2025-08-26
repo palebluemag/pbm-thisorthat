@@ -1076,20 +1076,35 @@ async function loadPreviewProducts() {
     }
 }
 
-// Display products in preview grid
+// Display products in preview grid (2 cards per row like the game)
 function displayPreviewProducts(products) {
     const grid = previewElements.previewGrid;
     grid.innerHTML = '';
     
     if (!products || products.length === 0) {
-        grid.innerHTML = '<p style="text-align: center; color: #666; grid-column: 1 / -1;">No products found for this category.</p>';
+        grid.innerHTML = '<p style="text-align: center; color: #666;">No products found for this category.</p>';
         return;
     }
     
-    products.forEach(product => {
-        const productElement = createPreviewProductElement(product);
-        grid.appendChild(productElement);
-    });
+    // Create rows of 2 cards each (like the game layout)
+    for (let i = 0; i < products.length; i += 2) {
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'preview-row';
+        
+        // Add first card
+        const product1 = products[i];
+        const card1 = createPreviewProductElement(product1);
+        rowDiv.appendChild(card1);
+        
+        // Add second card if it exists
+        if (i + 1 < products.length) {
+            const product2 = products[i + 1];
+            const card2 = createPreviewProductElement(product2);
+            rowDiv.appendChild(card2);
+        }
+        
+        grid.appendChild(rowDiv);
+    }
 }
 
 // Create individual product element for preview (uses exact game card structure)
