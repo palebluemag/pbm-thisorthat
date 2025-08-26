@@ -1379,3 +1379,201 @@ body.ponder-mode {
         font-size: 0.8rem;
     }
 }
+
+/* Preview Mode Styles */
+.preview-screen {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding-top: 4rem;
+}
+
+.preview-header {
+    padding: 2rem;
+    text-align: center;
+    background: #fafafa;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.preview-title {
+    font-family: 'Diatype', sans-serif;
+    font-size: 2rem;
+    font-weight: 600;
+    color: #000000;
+    margin-bottom: 0.5rem;
+}
+
+.preview-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    font-weight: 300;
+    color: #636363;
+    margin-bottom: 1.5rem;
+}
+
+.preview-controls {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.preview-button {
+    font-family: 'Diatype', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+    border: 1px solid #000000;
+    background: #ffffff;
+    color: #000000;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.preview-button:hover {
+    background: #000000;
+    color: #ffffff;
+}
+
+.preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.preview-product {
+    border: 1px solid #e5e5e5;
+    background: #ffffff;
+    transition: all 0.3s ease;
+}
+
+.preview-product:hover {
+    border-color: #000000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.preview-image {
+    width: 100%;
+    height: 200px;
+    background: #f8f8f8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid #e5e5e5;
+    overflow: hidden;
+}
+
+.preview-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.preview-image-emoji {
+    font-size: 3rem;
+    color: #cccccc;
+}
+
+.preview-content {
+    padding: 1rem;
+}
+
+.preview-product-name {
+    font-family: 'Diatype', sans-serif;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #000000;
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+}
+
+.preview-product-designer {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: #636363;
+    margin-bottom: 0.5rem;
+}
+
+.preview-product-materials {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 300;
+    color: #999999;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.preview-product-description {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 300;
+    color: #333333;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+}
+
+.preview-product-link {
+    font-family: 'Diatype', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #000000;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border-bottom: 1px solid #e5e5e5;
+    transition: border-color 0.3s ease;
+}
+
+.preview-product-link:hover {
+    border-color: #000000;
+}
+
+/* Mobile styles for preview mode */
+@media (max-width: 800px) {
+    .preview-header {
+        padding: 1.5rem 1rem;
+    }
+
+    .preview-title {
+        font-size: 1.5rem;
+    }
+
+    .preview-subtitle {
+        font-size: 0.875rem;
+    }
+
+    .preview-controls {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .preview-button {
+        font-size: 0.75rem;
+        padding: 0.625rem 1.25rem;
+    }
+
+    .preview-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .preview-image {
+        height: 150px;
+    }
+
+    .preview-content {
+        padding: 0.75rem;
+    }
+
+    .preview-product-name {
+        font-size: 1rem;
+    }
+}

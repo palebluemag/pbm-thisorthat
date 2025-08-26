@@ -1021,11 +1021,144 @@ function updateThemeDisplay() {
     }
 }
 
+// Check for preview mode
+function checkPreviewMode() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('preview') === 'true';
+}
+
+// Preview mode functionality
+let previewState = {
+    products: []
+};
+
+// Preview mode elements
+const previewElements = {
+    previewScreen: document.getElementById('previewScreen'),
+    previewGrid: document.getElementById('previewGrid'),
+    previewTheme: document.getElementById('previewTheme'),
+    backToGameButton: document.getElementById('backToGameButton'),
+    refreshPreviewButton: document.getElementById('refreshPreviewButton')
+};
+
+// Initialize preview mode
+async function initializePreviewMode() {
+    try {
+        // Hide all other screens
+        elements.startScreen.classList.add('hidden');
+        elements.gameBoard.classList.add('hidden');
+        elements.gameOverScreen.classList.add('hidden');
+        
+        // Show preview screen
+        previewElements.previewScreen.classList.remove('hidden');
+        
+        // Update theme display
+        previewElements.previewTheme.textContent = gameConfig.currentTheme;
+        
+        // Load and display products
+        await loadPreviewProducts();
+        
+    } catch (error) {
+        console.error('Error initializing preview mode:', error);
+        showError('Failed to load preview mode');
+    }
+}
+
+// Load products for preview
+async function loadPreviewProducts() {
+    try {
+        const products = await dbService.fetchActiveProducts(gameConfig.currentCategory);
+        previewState.products = products;
+        displayPreviewProducts(products);
+    } catch (error) {
+        console.error('Error loading preview products:', error);
+        showError('Failed to load products');
+    }
+}
+
+// Display products in preview grid
+function displayPreviewProducts(products) {
+    const grid = previewElements.previewGrid;
+    grid.innerHTML = '';
+    
+    if (!products || products.length === 0) {
+        grid.innerHTML = '<p style="text-align: center; color: #666; grid-column: 1 / -1;">No products found for this category.</p>';
+        return;
+    }
+    
+    products.forEach(product => {
+        const productElement = createPreviewProductElement(product);
+        grid.appendChild(productElement);
+    });
+}
+
+// Create individual product element for preview
+function createPreviewProductElement(product) {
+    const productDiv = document.createElement('div');
+    productDiv.className = 'preview-product';
+    
+    const linkUrl = product.product_url || product.link || '#';
+    
+    productDiv.innerHTML = `
+        <div class="preview-image">
+            ${product.image_url 
+                ? `<img src="${product.image_url}" alt="${product.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                   <div class="preview-image-emoji" style="display: none;">${product.image || '🪑'}</div>`
+                : `<div class="preview-image-emoji">${product.image || '🪑'}</div>`
+            }
+        </div>
+        <div class="preview-content">
+            <h3 class="preview-product-name">${truncateText(product.name, 60)}</h3>
+            <p class="preview-product-designer">${truncateText(product.designer, 50)}</p>
+            <p class="preview-product-materials">${product.materials || ''}</p>
+            <p class="preview-product-description">${truncateText(product.description, 200)}</p>
+            <a href="${linkUrl}" target="_blank" rel="noopener noreferrer" class="preview-product-link">
+                Learn More
+            </a>
+        </div>
+    `;
+    
+    return productDiv;
+}
+
+// Show error message
+function showError(message) {
+    previewElements.previewGrid.innerHTML = `
+        <div style="text-align: center; color: #cc0000; grid-column: 1 / -1; padding: 2rem;">
+            <p>${message}</p>
+            <button onclick="window.location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #000; color: #fff; border: none; cursor: pointer;">
+                Retry
+            </button>
+        </div>
+    `;
+}
+
+// Back to game functionality
+function backToGame() {
+    // Remove preview parameter and reload
+    const url = new URL(window.location);
+    url.searchParams.delete('preview');
+    window.location.href = url.toString();
+}
+
 // Mobile menu functionality
 document.addEventListener('DOMContentLoaded', () => {
+    // Check if we're in preview mode
+    if (checkPreviewMode()) {
+        initializePreviewMode();
+        
+        // Set up preview mode event listeners
+        previewElements.backToGameButton.addEventListener('click', backToGame);
+        previewElements.refreshPreviewButton.addEventListener('click', loadPreviewProducts);
+        
+        return; // Exit early, don't initialize normal game
+    }
+    
+    // Normal game initialization
     elements.startScreen.classList.remove('hidden');
     elements.gameBoard.classList.add('hidden');
     elements.gameOverScreen.classList.add('hidden');
+    previewElements.previewScreen.classList.add('hidden');
     
     // Set theme display on page load
     updateThemeDisplay();
