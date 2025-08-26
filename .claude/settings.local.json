@@ -6,7 +6,8 @@
       "Bash(git push:*)",
       "Bash(python:*)",
       "Bash(npm install)",
-      "WebFetch(domain:palebluemagazine.com)"
+      "WebFetch(domain:palebluemagazine.com)",
+      "Bash(git revert:*)"
     ],
     "deny": []
   }

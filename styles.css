@@ -1446,13 +1446,14 @@ body.ponder-mode {
 .preview-row {
     display: flex;
     gap: min(2vw, 3rem);
-    align-items: flex-start;
+    align-items: stretch;
     justify-content: center;
 }
 
 .preview-row .furniture-card {
-    flex: 1;
-    max-width: 500px;
+    width: min(40vw, 600px);
+    min-width: 350px;
+    flex-shrink: 0;
     cursor: default;
 }
 
