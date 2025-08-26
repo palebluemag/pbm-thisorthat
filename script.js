@@ -1092,34 +1092,57 @@ function displayPreviewProducts(products) {
     });
 }
 
-// Create individual product element for preview (matches game card exactly)
+// Create individual product element for preview (uses exact game card structure)
 function createPreviewProductElement(product) {
     const productDiv = document.createElement('div');
-    productDiv.className = 'preview-product';
+    productDiv.className = 'furniture-card'; // Use exact game class
     
     const linkUrl = product.product_url || product.link || '#';
     
-    // Create the same structure as updateCard function in the game
+    // Use EXACT same HTML structure as the game cards
     productDiv.innerHTML = `
-        <div class="preview-image">
-            ${product.image_url 
-                ? `<img src="${product.image_url}" alt="${product.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                   <div class="preview-image-emoji" style="display: none;">${product.image || '🪑'}</div>`
-                : `<div class="preview-image-emoji">${product.image || '🪑'}</div>`
-            }
+        <div class="card-image-container">
+            <div class="card-emoji"></div>
         </div>
-        <div class="preview-content">
-            <div class="preview-product-info">
-                <h3 class="preview-product-name">${truncateText(product.name, 60)}</h3>
-                <p class="preview-product-designer">${truncateText(product.designer, 50)}</p>
-                <p class="preview-product-materials">${product.materials || ''}</p>
+        <div class="card-content">
+            <div class="card-info">
+                <h3 class="card-title">${truncateText(product.name, 60)}</h3>
+                <p class="card-designer">${truncateText(product.designer, 50)}</p>
+                <p class="card-materials">${product.materials || ''}</p>
             </div>
-            <p class="preview-product-description">${truncateText(product.description, 250)}</p>
-            <a href="${linkUrl}" target="_blank" rel="noopener noreferrer" class="preview-product-link">
+            <p class="card-description">${truncateText(product.description, 250)}</p>
+            <a href="${linkUrl}" target="_blank" rel="noopener noreferrer" class="card-link">
                 Learn More
             </a>
         </div>
     `;
+    
+    // Handle image display using exact same logic as updateCard function
+    const imageContainer = productDiv.querySelector('.card-emoji');
+    
+    if (product.image_url) {
+        // Clear any existing content and create img element
+        imageContainer.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = product.image_url;
+        img.alt = product.name;
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+        img.style.borderRadius = '4px';
+        
+        // Handle image load errors - fallback to emoji
+        img.onerror = () => {
+            imageContainer.innerHTML = '';
+            imageContainer.textContent = product.image || '🪑';
+        };
+        
+        imageContainer.appendChild(img);
+    } else {
+        // Fallback to emoji
+        imageContainer.innerHTML = '';
+        imageContainer.textContent = product.image || '🪑';
+    }
     
     return productDiv;
 }
