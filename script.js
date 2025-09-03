@@ -514,6 +514,14 @@ function updateCard(side, item) {
     
     elements[`${prefix}Title`].textContent = truncateText(item.name, 60);
     elements[`${prefix}Designer`].textContent = truncateText(item.designer, 50);
+    elements[`${prefix}Designer`].href = item.designer_url || '#';
+    if (!item.designer_url) {
+        elements[`${prefix}Designer`].style.cursor = 'default';
+        elements[`${prefix}Designer`].onclick = (e) => e.preventDefault();
+    } else {
+        elements[`${prefix}Designer`].style.cursor = 'pointer';
+        elements[`${prefix}Designer`].onclick = null;
+    }
     elements[`${prefix}Materials`].textContent = item.materials || '';
     elements[`${prefix}Description`].textContent = truncateText(item.description, 250);
     elements[`${prefix}Link`].href = linkUrl;
