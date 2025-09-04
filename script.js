@@ -1019,6 +1019,8 @@ elements.resetButton.addEventListener('click', resetGame);
 // Prevent link clicks from triggering card selection
 elements.leftLink.addEventListener('click', (e) => e.stopPropagation());
 elements.rightLink.addEventListener('click', (e) => e.stopPropagation());
+elements.leftDesigner.addEventListener('click', (e) => e.stopPropagation());
+elements.rightDesigner.addEventListener('click', (e) => e.stopPropagation());
 
 // Set theme display function
 function updateThemeDisplay() {
