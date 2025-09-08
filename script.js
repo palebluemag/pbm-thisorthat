@@ -947,6 +947,14 @@ function showGameOverScreen() {
     
     elements.winnerName.textContent = truncateText(gameState.winner.name, 60);
     elements.winnerDesigner.textContent = truncateText(gameState.winner.designer, 50);
+    elements.winnerDesigner.href = gameState.winner.designer_url || '#';
+    if (!gameState.winner.designer_url) {
+        elements.winnerDesigner.style.cursor = 'default';
+        elements.winnerDesigner.onclick = (e) => e.preventDefault();
+    } else {
+        elements.winnerDesigner.style.cursor = 'pointer';
+        elements.winnerDesigner.onclick = null;
+    }
     elements.winnerMaterials.textContent = gameState.winner.materials || '';
     elements.winnerDescription.textContent = truncateText(gameState.winner.description, 250);
     elements.winnerLink.href = linkUrl;

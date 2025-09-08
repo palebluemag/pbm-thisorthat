@@ -7,8 +7,18 @@
       "Bash(python:*)",
       "Bash(npm install)",
       "WebFetch(domain:palebluemagazine.com)",
-      "Bash(git revert:*)"
+      "Bash(git revert:*)",
+      "Bash(curl:*)",
+      "Bash(npx vercel:*)",
+      "Bash(vercel dev:*)",
+      "Bash(npx @vercel/cli dev:*)",
+      "Bash(vercel:*)",
+      "Bash(git checkout:*)",
+      "Bash(git log:*)"
     ],
-    "deny": []
+    "deny": [],
+    "additionalDirectories": [
+      "C:\\c\\Users\\LEGION"
+    ]
   }
 }
