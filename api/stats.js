@@ -52,7 +52,7 @@ module.exports = async function handler(req, res) {
     console.log(`Product A wins: ${productA_wins}, Product B wins: ${productB_wins}, Total: ${totalBattles}`);
 
     // Minimum threshold before showing real data
-    const MIN_BATTLES = 2;
+    const MIN_BATTLES = 1;
     
     if (totalBattles < MIN_BATTLES) {
       return res.status(200).json({
