@@ -295,6 +295,7 @@ body.ponder-mode {
     z-index: 1000;
 }
 
+
 .start-card {
     background: #ffffff;
     border: 1px solid #e5e5e5;
@@ -834,6 +835,7 @@ body.ponder-mode {
 .vs-badge.fade-out {
     opacity: 0;
 }
+
 
 
 .ponder-message {

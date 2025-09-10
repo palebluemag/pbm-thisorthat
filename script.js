@@ -317,6 +317,7 @@ const elements = {
     selectionPrompt: document.getElementById('selectionPrompt'),
     resetButton: document.getElementById('resetButton'),
     subtitle: document.getElementById('subtitle'),
+    ponderMessage: document.getElementById('ponderMessage'),
     
     // Left card elements
     leftEmoji: document.getElementById('leftEmoji'),
@@ -350,10 +351,7 @@ const elements = {
     winnerDesigner: document.getElementById('winnerDesigner'),
     winnerMaterials: document.getElementById('winnerMaterials'),
     winnerDescription: document.getElementById('winnerDescription'),
-    winnerLink: document.getElementById('winnerLink'),
-    
-    // Ponder message
-    ponderMessage: document.getElementById('ponderMessage')
+    winnerLink: document.getElementById('winnerLink')
 };
 
 // Initialize game
@@ -969,8 +967,8 @@ function resetGame() {
         clearTimeout(gameState.autoContinueTimer);
     }
     // Reset subtitle
-    elements.subtitle.textContent = 'Choose your preferred piece';
-    elements.subtitle.className = 'subtitle';
+    elements.subtitle.textContent = 'Round 1 of 10';
+    elements.subtitle.className = 'subtitle round-info';
     // Remove any mode states
     document.body.classList.remove('ponder-mode', 'winner-screen');
     elements.vsBadge.classList.remove('countdown');
