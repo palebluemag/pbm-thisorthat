@@ -98,20 +98,12 @@ async function analyzeVotingData() {
       .sort((a, b) => b.winRate - a.winRate);
 
     if (productsWithVotes.length > 0) {
-      console.log(`\n🏆 TOP 10 PERFORMING PRODUCTS (by win rate):`);
-      console.log('-'.repeat(50));
+      console.log(`\n📊 ALL PRODUCTS RANKED BY WIN RATE (${productsWithVotes.length} products):`);
+      console.log('-'.repeat(70));
       
-      productsWithVotes.slice(0, 10).forEach((product, index) => {
+      productsWithVotes.forEach((product, index) => {
         const winRate = (product.winRate * 100).toFixed(1);
-        console.log(`${index + 1}. "${product.name}" - ${winRate}% win rate (${product.wins}W-${product.losses}L, ${product.total} battles)`);
-      });
-
-      console.log(`\n📉 BOTTOM 10 PERFORMING PRODUCTS (by win rate):`);
-      console.log('-'.repeat(50));
-      
-      productsWithVotes.slice(-10).reverse().forEach((product, index) => {
-        const winRate = (product.winRate * 100).toFixed(1);
-        console.log(`${index + 1}. "${product.name}" - ${winRate}% win rate (${product.wins}W-${product.losses}L, ${product.total} battles)`);
+        console.log(`${(index + 1).toString().padStart(2)}. "${product.name}" - ${winRate.padStart(5)}% win rate (${product.wins}W-${product.losses}L, ${product.total} battles)`);
       });
     }
 

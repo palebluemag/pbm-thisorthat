@@ -14,7 +14,11 @@
       "Bash(npx @vercel/cli dev:*)",
       "Bash(vercel:*)",
       "Bash(git checkout:*)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(gh run list:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(npm install:*)",
+      "Bash(node analyze-votes.js)"
     ],
     "deny": [],
     "additionalDirectories": [

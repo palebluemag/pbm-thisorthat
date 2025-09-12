@@ -81,6 +81,22 @@ const dbService = {
                 hasEnoughData: false
             };
         }
+    },
+
+    async getTopProducts(limit = 5) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/leaderboard?limit=${limit}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            return data.products;
+        } catch (error) {
+            console.error('Error getting top products:', error);
+            return [];
+        }
     }
 };
 
@@ -351,7 +367,8 @@ const elements = {
     winnerDesigner: document.getElementById('winnerDesigner'),
     winnerMaterials: document.getElementById('winnerMaterials'),
     winnerDescription: document.getElementById('winnerDescription'),
-    winnerLink: document.getElementById('winnerLink')
+    winnerLink: document.getElementById('winnerLink'),
+    leaderboardList: document.getElementById('leaderboardList')
 };
 
 // Initialize game
@@ -956,6 +973,47 @@ function showGameOverScreen() {
     elements.winnerMaterials.textContent = gameState.winner.materials || '';
     elements.winnerDescription.textContent = truncateText(gameState.winner.description, 250);
     elements.winnerLink.href = linkUrl;
+    
+    // Load and display top 5 leaderboard
+    loadLeaderboard();
+}
+
+// Load and display leaderboard
+async function loadLeaderboard() {
+    try {
+        const topProducts = await dbService.getTopProducts(5);
+        displayLeaderboard(topProducts);
+    } catch (error) {
+        console.error('Error loading leaderboard:', error);
+        elements.leaderboardList.innerHTML = '<p style="text-align: center; color: #999;">Unable to load leaderboard</p>';
+    }
+}
+
+// Display leaderboard
+function displayLeaderboard(products) {
+    if (!products || products.length === 0) {
+        elements.leaderboardList.innerHTML = '<p style="text-align: center; color: #999;">No data available</p>';
+        return;
+    }
+    
+    const leaderboardHTML = products.map((product, index) => {
+        const winRate = (product.winRate * 100).toFixed(1);
+        const linkUrl = product.product_url || '#';
+        
+        return `
+            <div class="leaderboard-item">
+                <span class="leaderboard-rank">${index + 1}</span>
+                <div class="leaderboard-product">
+                    <a href="${linkUrl}" target="_blank" rel="noopener noreferrer" class="leaderboard-product-name">
+                        ${truncateText(product.name, 40)}
+                    </a>
+                </div>
+                <span class="leaderboard-stats">${winRate}%</span>
+            </div>
+        `;
+    }).join('');
+    
+    elements.leaderboardList.innerHTML = leaderboardHTML;
 }
 
 // Reset game

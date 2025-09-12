@@ -514,6 +514,78 @@ body.ponder-mode {
     text-decoration: none;
 }
 
+/* Winner Leaderboard */
+.winner-leaderboard {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e0e0e0;
+}
+
+.leaderboard-title {
+    font-family: 'Diatype', sans-serif;
+    font-size: 0.625rem;
+    font-weight: 500;
+    color: #999999;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 0 0 0.75rem 0;
+    text-align: center;
+}
+
+.leaderboard-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.leaderboard-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.leaderboard-item:last-child {
+    border-bottom: none;
+}
+
+.leaderboard-rank {
+    font-family: 'Diatype', sans-serif;
+    font-size: 0.625rem;
+    font-weight: 500;
+    color: #999999;
+    width: 1.5rem;
+    text-align: center;
+}
+
+.leaderboard-product {
+    flex: 1;
+    margin: 0 0.75rem;
+}
+
+.leaderboard-product-name {
+    font-family: 'Diatype', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: #000000;
+    text-decoration: underline;
+    cursor: pointer;
+    line-height: 1.3;
+}
+
+.leaderboard-product-name:hover {
+    text-decoration: none;
+}
+
+.leaderboard-stats {
+    font-family: 'Diatype', sans-serif;
+    font-size: 0.625rem;
+    color: #666666;
+    white-space: nowrap;
+}
+
 .reset-button {
     color: #000000;
     background: transparent;

@@ -57,18 +57,7 @@ module.exports = async function handler(req, res) {
     const smoothedB_wins = productB_wins + smoothingFactor;
     const smoothedTotal = smoothedA_wins + smoothedB_wins;
 
-    // Minimum threshold before showing real data
-    const MIN_BATTLES = 1;
-    
-    if (totalBattles < MIN_BATTLES) {
-      return res.status(200).json({
-        productA_percentage: null,
-        productB_percentage: null,
-        totalBattles,
-        isRealData: false,
-        hasEnoughData: false
-      });
-    }
+    // No minimum threshold needed - smoothing handles all cases including first votes
 
     const productA_percentage = Math.round((smoothedA_wins / smoothedTotal) * 100);
     
