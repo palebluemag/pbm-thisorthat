@@ -532,6 +532,41 @@ body.ponder-mode {
     text-align: center;
 }
 
+.leaderboard-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 0.5rem;
+}
+
+.leaderboard-header-rank {
+    font-family: 'Diatype', sans-serif;
+    font-size: 0.625rem;
+    font-weight: 500;
+    color: #999999;
+    width: 1.5rem;
+    text-align: center;
+}
+
+.leaderboard-header-name {
+    flex: 1;
+    margin: 0 0.75rem;
+    font-family: 'Diatype', sans-serif;
+    font-size: 0.625rem;
+    font-weight: 500;
+    color: #999999;
+}
+
+.leaderboard-header-stats {
+    font-family: 'Diatype', sans-serif;
+    font-size: 0.625rem;
+    font-weight: 500;
+    color: #999999;
+    white-space: nowrap;
+}
+
 .leaderboard-list {
     display: flex;
     flex-direction: column;
