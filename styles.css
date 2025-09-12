@@ -418,6 +418,10 @@ body.ponder-mode {
     max-width: 32rem;
     width: 100%;
     text-align: center;
+    /* Chrome on iPhone specific fixes */
+    position: relative;
+    contain: layout style paint;
+    isolation: isolate;
 }
 
 .winner-title {
@@ -1541,6 +1545,12 @@ body.ponder-mode {
     
     .winner-card {
         padding: 1rem;
+        /* Additional Chrome iOS fixes */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        box-sizing: border-box;
     }
     
     .winner-image-container {
@@ -1548,13 +1558,16 @@ body.ponder-mode {
         max-width: 16rem;
         width: 16rem;
         height: 16rem;
-        /* iPhone Safari specific fixes */
+        min-height: 16rem;
+        flex-shrink: 0;
+        /* iPhone Safari & Chrome iOS specific fixes */
         position: relative;
         z-index: 1;
         -webkit-backface-visibility: hidden;
         backface-visibility: hidden;
         -webkit-perspective: 1000px;
         perspective: 1000px;
+        contain: size layout style paint;
     }
     
     .winner-info {
