@@ -51,6 +51,12 @@ module.exports = async function handler(req, res) {
     console.log(`Head-to-head stats: Product ${productA_id} vs ${productB_id}`);
     console.log(`Product A wins: ${productA_wins}, Product B wins: ${productB_wins}, Total: ${totalBattles}`);
 
+    // Apply Laplace smoothing (add 2 virtual votes to each side)
+    const smoothingFactor = 2;
+    const smoothedA_wins = productA_wins + smoothingFactor;
+    const smoothedB_wins = productB_wins + smoothingFactor;
+    const smoothedTotal = smoothedA_wins + smoothedB_wins;
+
     // Minimum threshold before showing real data
     const MIN_BATTLES = 1;
     
@@ -64,7 +70,7 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    const productA_percentage = Math.round((productA_wins / totalBattles) * 100);
+    const productA_percentage = Math.round((smoothedA_wins / smoothedTotal) * 100);
     
     res.status(200).json({
       productA_percentage,
