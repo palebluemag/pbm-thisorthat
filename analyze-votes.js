@@ -28,14 +28,18 @@ async function analyzeVotingData() {
 
     console.log(`📊 Total active products: ${products.length}\n`);
 
-    // Get all voting records
+    // Get all voting records with session info
     const { data: votes, error: votesError } = await supabase
       .from('user_choices')
-      .select('winner_id, loser_id');
+      .select('session_id, winner_id, loser_id');
 
     if (votesError) throw votesError;
 
-    console.log(`🗳️ Total votes recorded: ${votes.length}\n`);
+    console.log(`🗳️ Total votes recorded: ${votes.length}`);
+    
+    // Count unique sessions
+    const uniqueSessions = new Set(votes.map(vote => vote.session_id));
+    console.log(`🎮 Total game sessions: ${uniqueSessions.size}\n`);
 
     // Create a Set of all product IDs that have received votes (either as winner or loser)
     const votedProductIds = new Set();
@@ -115,6 +119,12 @@ async function analyzeVotingData() {
     console.log(`Products with zero votes: ${productsWithZeroVotes.length}`);
     console.log(`Coverage: ${((votedProductIds.size / products.length) * 100).toFixed(1)}%`);
     console.log(`Total battles: ${votes.length}`);
+    console.log(`Total game sessions: ${uniqueSessions.size}`);
+    
+    if (uniqueSessions.size > 0) {
+      const avgVotesPerSession = (votes.length / uniqueSessions.size).toFixed(1);
+      console.log(`Average votes per session: ${avgVotesPerSession}`);
+    }
 
     if (votedProductIds.size > 0) {
       const avgBattlesPerProduct = votes.length * 2 / votedProductIds.size; // Each vote involves 2 products

@@ -6,8 +6,8 @@ const API_BASE_URL = window.location.origin;
 
 // Game configuration
 const gameConfig = {
-    currentTheme: 'Table Lamps', // Change this to set the current theme
-    currentCategory: 'Table Lamp' // Change this to filter by category (e.g., 'Chairs', 'Tables', 'Lighting', etc.)
+    currentTheme: 'Coffee Tables', // Change this to set the current theme
+    currentCategory: 'Coffee Table' // Change this to filter by category (e.g., 'Chairs', 'Tables', 'Lighting', etc.)
 };
 
 // API service functions
