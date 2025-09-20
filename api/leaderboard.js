@@ -23,20 +23,31 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'Limit must be between 1 and 50' });
     }
 
-    // Get all active products
-    const { data: products, error: productsError } = await supabase
+    // Get all products that have votes (active or inactive)
+    const { data: allProducts, error: productsError } = await supabase
       .from('products')
-      .select('id, name, product_url')
-      .eq('is_active', true);
+      .select('id, name, product_url, is_active');
 
     if (productsError) throw productsError;
 
-    // Get all voting records
+    // Get all voting records first to find which products have votes
     const { data: votes, error: votesError } = await supabase
       .from('user_choices')
       .select('winner_id, loser_id');
 
     if (votesError) throw votesError;
+
+    // Find all product IDs that have votes
+    const votedProductIds = new Set();
+    votes.forEach(vote => {
+      votedProductIds.add(vote.winner_id);
+      votedProductIds.add(vote.loser_id);
+    });
+
+    // Filter to only products that have votes
+    const products = allProducts.filter(product => votedProductIds.has(product.id));
+
+    // Note: votes already fetched above
 
     // Calculate win rates for each product
     const productStats = {};
