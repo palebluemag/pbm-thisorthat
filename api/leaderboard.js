@@ -23,49 +23,46 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'Limit must be between 1 and 50' });
     }
 
-    // Get all products that have votes (active or inactive)
-    const { data: allProducts, error: productsError } = await supabase
+    // Get Coffee Table products (current active theme)
+    const { data: products, error: productsError } = await supabase
       .from('products')
-      .select('id, name, product_url, is_active');
+      .select('id, name, product_url, is_active')
+      .eq('is_active', true); // Only current Coffee Table products
 
     if (productsError) throw productsError;
 
-    // Get all voting records first to find which products have votes
+    // Get ALL voting records for Coffee Table products (IDs 36-55)
+    const coffeeTableIds = products.map(p => p.id);
     const { data: votes, error: votesError } = await supabase
       .from('user_choices')
-      .select('winner_id, loser_id');
+      .select('winner_id, loser_id')
+      .or(`winner_id.in.(${coffeeTableIds.join(',')}),loser_id.in.(${coffeeTableIds.join(',')})`);
 
     if (votesError) throw votesError;
-
-    // Find all product IDs that have votes
-    const votedProductIds = new Set();
-    votes.forEach(vote => {
-      votedProductIds.add(vote.winner_id);
-      votedProductIds.add(vote.loser_id);
-    });
-
-    // Filter to only products that have votes
-    const products = allProducts.filter(product => votedProductIds.has(product.id));
 
     // Note: votes already fetched above
 
     // Calculate win rates for each product
     const productStats = {};
-    
-    votes.forEach(vote => {
-      // Track wins
-      if (!productStats[vote.winner_id]) {
-        productStats[vote.winner_id] = { wins: 0, losses: 0, total: 0 };
-      }
-      productStats[vote.winner_id].wins++;
-      productStats[vote.winner_id].total++;
+    const coffeeTableIdSet = new Set(coffeeTableIds);
 
-      // Track losses
-      if (!productStats[vote.loser_id]) {
-        productStats[vote.loser_id] = { wins: 0, losses: 0, total: 0 };
+    votes.forEach(vote => {
+      // Only count battles between Coffee Table products
+      if (coffeeTableIdSet.has(vote.winner_id) && coffeeTableIdSet.has(vote.loser_id)) {
+        // Track wins
+        if (!productStats[vote.winner_id]) {
+          productStats[vote.winner_id] = { wins: 0, losses: 0, total: 0 };
+        }
+        productStats[vote.winner_id].wins++;
+        productStats[vote.winner_id].total++;
+
+        // Track losses
+        if (!productStats[vote.loser_id]) {
+          productStats[vote.loser_id] = { wins: 0, losses: 0, total: 0 };
+        }
+        productStats[vote.loser_id].losses++;
+        productStats[vote.loser_id].total++;
       }
-      productStats[vote.loser_id].losses++;
-      productStats[vote.loser_id].total++;
     });
 
     // Create leaderboard with win rates
