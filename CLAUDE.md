@@ -66,3 +66,26 @@ Uses Pale Blue Magazine aesthetic:
 - Mobile-responsive design with stacked layout
 
 The design emphasizes clean typography, ample whitespace, and editorial presentation of furniture pieces with designer attribution.
+
+## Change Log
+
+### Image Aspect Ratio Changes (2025-01-19)
+**Context**: Coffee Table theme implementation
+**Changes Made**:
+- `.card-image-container` aspect-ratio: `4/5` → `1` (square)
+- `.card-emoji` aspect-ratio: `4/5` → `1` (square)
+**Files Modified**: `styles.css` lines 788, 796
+**Revert Instructions**: To restore original aspect ratios, change both values back to `4/5`
+**Mobile Impact**: None - mobile styles remain unchanged
+**Git Commits**:
+- 9112848: "Fix grammar error and update desktop product images to square aspect ratio"
+
+### Coffee Table Game Logic Changes (2025-01-19)
+**Context**: Coffee Table theme - Noguchi always starts as defender
+**Changes Made**:
+- Modified `initializeGame()` function to always place Noguchi Coffee Table as initial defender (left side)
+- Ensures Noguchi is removed from remaining pool to prevent duplicates
+- No extra votes counted for Noguchi - it's just the starting matchup
+- Game logic otherwise unchanged (10 rounds, normal elimination)
+**Files Modified**: `script.js` lines ~395-441
+**Revert Instructions**: Remove Noguchi-specific logic and restore original random shuffling

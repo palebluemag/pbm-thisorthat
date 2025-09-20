@@ -785,7 +785,7 @@ body.ponder-mode {
     border-right: 1px solid #e5e5e5;
     overflow: hidden;
     position: relative;
-    aspect-ratio: 1;
+    aspect-ratio: 1; /* CHANGED: was 4/5, changed to 1 for Coffee Table theme (2025-01-19) */
 }
 
 .card-emoji {
@@ -793,7 +793,7 @@ body.ponder-mode {
     line-height: 1;
     width: 100%;
     height: 100%;
-    aspect-ratio: 1 !important;
+    aspect-ratio: 1 !important; /* CHANGED: was 4/5, changed to 1 for Coffee Table theme (2025-01-19) */
     object-fit: cover;
     display: flex;
     align-items: center;
