@@ -28,18 +28,86 @@ async function analyzeVotingData() {
 
     console.log(`📊 Total active products: ${products.length}\n`);
 
-    // Get all voting records with session info
-    const { data: votes, error: votesError } = await supabase
-      .from('user_choices')
-      .select('session_id, winner_id, loser_id');
+    // Get ALL voting records with session info (handle pagination)
+    let allVotes = [];
+    let from = 0;
+    const batchSize = 1000;
+    let hasMore = true;
 
-    if (votesError) throw votesError;
+    while (hasMore) {
+      const { data: batch, error: votesError } = await supabase
+        .from('user_choices')
+        .select('session_id, winner_id, loser_id, created_at')
+        .order('created_at', { ascending: false })
+        .range(from, from + batchSize - 1);
+
+      if (votesError) throw votesError;
+
+      if (batch && batch.length > 0) {
+        allVotes = allVotes.concat(batch);
+        from += batchSize;
+        hasMore = batch.length === batchSize;
+      } else {
+        hasMore = false;
+      }
+    }
+
+    const votes = allVotes;
+
+    // Get total count separately
+    const { count } = await supabase
+      .from('user_choices')
+      .select('*', { count: 'exact', head: true });
+
+    console.log(`📊 Query returned ${votes.length} votes`);
+    console.log(`📊 Total count in database: ${count}`);
 
     console.log(`🗳️ Total votes recorded: ${votes.length}`);
+
+    // Show recent votes to debug
+    console.log('\n🕒 Most recent 10 votes:');
+    votes.slice(0, 10).forEach((vote, i) => {
+      console.log(`${i + 1}. Session: ${vote.session_id?.slice(-8)}, Winner: ${vote.winner_id}, Loser: ${vote.loser_id}, Time: ${vote.created_at}`);
+    });
+
+    // Check for Coffee Table product IDs (36-55)
+    const coffeeTableVotes = votes.filter(vote =>
+      (vote.winner_id >= 36 && vote.winner_id <= 55) ||
+      (vote.loser_id >= 36 && vote.loser_id <= 55)
+    );
+    console.log(`\n☕ Coffee Table votes found: ${coffeeTableVotes.length}`);
     
     // Count unique sessions
     const uniqueSessions = new Set(votes.map(vote => vote.session_id));
     console.log(`🎮 Total game sessions: ${uniqueSessions.size}\n`);
+
+    // Get recent Coffee Table sessions with details
+    const coffeeTableVotesDetailed = votes.filter(vote =>
+      (vote.winner_id >= 36 && vote.winner_id <= 55) ||
+      (vote.loser_id >= 36 && vote.loser_id <= 55)
+    );
+
+    const coffeeTableSessions = new Set(coffeeTableVotesDetailed.map(vote => vote.session_id));
+    const recentCoffeeTableSessions = Array.from(coffeeTableSessions)
+      .map(sessionId => {
+        const sessionVotes = coffeeTableVotesDetailed.filter(vote => vote.session_id === sessionId);
+        const firstVote = sessionVotes.sort((a, b) => new Date(a.created_at) - new Date(b.created_at))[0];
+        return {
+          sessionId: sessionId,
+          voteCount: sessionVotes.length,
+          startTime: firstVote.created_at,
+          shortId: sessionId.slice(-8)
+        };
+      })
+      .sort((a, b) => new Date(b.startTime) - new Date(a.startTime))
+      .slice(0, 10);
+
+    console.log('☕ Recent Coffee Table Sessions:');
+    recentCoffeeTableSessions.forEach((session, i) => {
+      const timeAgo = new Date(session.startTime).toLocaleString();
+      console.log(`${String(i + 1).padStart(2)}. Session ${session.shortId}: ${session.voteCount} votes - ${timeAgo}`);
+    });
+    console.log(`\n📊 Total Coffee Table sessions: ${coffeeTableSessions.size}`);
 
     // Create a Set of all product IDs that have received votes (either as winner or loser)
     const votedProductIds = new Set();

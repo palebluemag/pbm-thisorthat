@@ -48,15 +48,33 @@
     <div class="container">
         <!-- Start Screen -->
         <div id="startScreen" class="start-screen">
-            <div class="start-card">
-                <h1 class="start-title">The Hot Seat</h1>
-                <p class="start-subtitle">A design discovery game</p>
-                <p class="game-theme" id="gameTheme"></p>
-                <div class="disclaimer">
-                    <p>This playful format is meant for fun discovery of great design rather than creating competition. Nothing replaces seeing and feeling these pieces in person. We encourage you to support all these designers and dive deeper into each and every piece.</p>
-                    <p class="partnership-note">Products in Partnership with Adorno</p>
+            <div class="start-modal">
+                <div class="modal-content">
+                    <div class="modal-left">
+                        <div class="background-image">
+                            <img src="https://media.adorno.design/wp-content/uploads/2024/05/22082117/anna-%D0%9A%D0%BE%D0%BF%D0%B8%D1%8F-trh5h.jpg" alt="Patch coffee table" />
+                        </div>
+                        <div class="image-overlay-top">
+                            <div class="theme-label">THEME OF THE GAME</div>
+                        </div>
+                        <div class="image-overlay-bottom">
+                            <div class="theme-name" id="gameTheme">Coffee Tables</div>
+                        </div>
+                    </div>
+                    <div class="modal-right">
+                        <div class="modal-text">
+                            <p class="subtitle">A DESIGN DISCOVERY GAME</p>
+                            <h1 class="main-title">THE HOT SEAT</h1>
+                            <p class="description">
+                                Vote on your favorite pieces in 10<br>face-offs. Discover the best in design<br>from around the world along the way.
+                            </p>
+                            <button class="play-button" id="playButton">PLAY</button>
+                        </div>
+                        <div class="partnership">
+                            <p>Products in partnership with <a href="https://adorno.design/" target="_blank" rel="noopener noreferrer">Adorno</a></p>
+                        </div>
+                    </div>
                 </div>
-                <button class="play-button" id="playButton">Play Now</button>
             </div>
         </div>
 

@@ -379,7 +379,7 @@ async function initializeGame() {
         
         // Update theme display
         if (elements.gameTheme) {
-            elements.gameTheme.textContent = `This Game's Theme: ${gameConfig.currentTheme}`;
+            elements.gameTheme.textContent = gameConfig.currentTheme;
         }
         
         // Fetch products from Supabase using current category filter
@@ -1116,8 +1116,7 @@ elements.rightDesigner.addEventListener('click', (e) => e.stopPropagation());
 function updateThemeDisplay() {
     const themeElement = document.getElementById('gameTheme');
     if (themeElement) {
-        const themeText = `This Game's Theme: ${gameConfig.currentTheme}`;
-        themeElement.textContent = themeText;
+        themeElement.textContent = gameConfig.currentTheme;
     }
 }
 

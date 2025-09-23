@@ -18,7 +18,13 @@
       "Bash(gh run list:*)",
       "WebFetch(domain:github.com)",
       "Bash(npm install:*)",
-      "Bash(node analyze-votes.js)"
+      "Bash(node analyze-votes.js)",
+      "Bash(node:*)",
+      "Bash(start index.html)",
+      "Bash(npx serve:*)",
+      "Read(//c/**)",
+      "Bash(git restore:*)",
+      "Bash(git stash:*)"
     ],
     "deny": [],
     "additionalDirectories": [
