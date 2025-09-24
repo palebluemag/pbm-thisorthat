@@ -561,81 +561,67 @@ body.ponder-mode {
 
 /* Desktop-only: Two-column winner layout */
 @media (min-width: 768px) {
-    .winner-container {
+    /* Transform single winner-card into two-column layout */
+    .winner-card {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 2rem;
         max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 1rem;
+        grid-template-areas:
+            "winner-content leaderboard-content"
+            "winner-content reset-button";
     }
 
-    .winner-left .winner-card,
-    .winner-right {
+    /* Left column: winner content */
+    .winner-title,
+    .winner-image-container,
+    .winner-info,
+    .winner-details {
+        grid-area: winner-content;
+    }
+
+    .winner-title { order: 1; }
+    .winner-image-container { order: 2; }
+    .winner-info { order: 3; }
+    .winner-details { order: 4; }
+
+    /* Create a wrapper for left content */
+    .winner-card {
+        grid-template-areas:
+            "left-content right-content";
+    }
+
+    .winner-title,
+    .winner-image-container,
+    .winner-info,
+    .winner-details {
+        grid-area: left-content;
+    }
+
+    .winner-leaderboard,
+    .reset-button {
+        grid-area: right-content;
+    }
+
+    /* Style right column to match left */
+    .winner-leaderboard {
         background: #ffffff;
         border: 1px solid #e5e5e5;
-        padding: 3rem;
-        max-width: none;
+        padding: 2rem;
+        border-radius: 0;
+        display: flex;
+        flex-direction: column;
+        height: fit-content;
+    }
+
+    .reset-button {
+        background: #ffffff;
+        border: 1px solid #e5e5e5;
+        padding: 1rem 2rem;
+        margin-top: 1rem;
+        border-radius: 0;
         width: 100%;
         text-align: center;
-        position: relative;
-        contain: layout style paint;
-        isolation: isolate;
-    }
-
-    .winner-right {
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-    }
-
-    /* Create consistent structure between columns */
-    .winner-left .winner-card {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-    }
-
-    .winner-right {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-    }
-
-    /* Align titles at same height */
-    .winner-title,
-    .winner-right .leaderboard-title {
-        margin-top: 0;
-        margin-bottom: 1.5rem;
-        min-height: 2rem; /* Ensure consistent height */
-    }
-
-    /* Flexible content areas */
-    .winner-details {
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        margin-top: auto;
-    }
-
-    .winner-leaderboard {
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-        margin-bottom: 1.5rem;
-    }
-
-    .leaderboard-list {
-        flex-grow: 1;
-        min-height: 200px; /* Minimum height for leaderboard content */
-    }
-
-    /* Align bottom elements */
-    .winner-link,
-    .winner-right .reset-button {
-        margin-top: auto;
-        align-self: center;
     }
 
     /* Hide header on winner screen */
@@ -646,11 +632,11 @@ body.ponder-mode {
     /* Adjust winner screen padding without header */
     .winner-screen .game-over-screen {
         padding-top: 2rem;
-        min-height: calc(100vh - 80px); /* Account for fixed site header */
+        min-height: calc(100vh - 80px);
     }
 
-    /* Make leaderboard fonts larger to match left column hierarchy */
-    .winner-right .leaderboard-title {
+    /* Font size improvements */
+    .leaderboard-title {
         font-size: clamp(16px, 1rem + ((1vw - 3.2px) * 0.417), 20px);
         font-weight: 700;
         letter-spacing: 0.05em;
@@ -660,53 +646,38 @@ body.ponder-mode {
         font-family: 'Inter', sans-serif;
     }
 
-    .winner-right .leaderboard-header {
+    .leaderboard-header {
         font-size: 16px;
-        font-weight: 600;
-        margin-bottom: 1rem;
-    }
-
-    .winner-right .leaderboard-item {
-        font-size: 14px;
-        margin-bottom: 0.75rem;
-    }
-
-    .winner-right .leaderboard-product-name {
-        font-size: 14px;
         font-weight: 600;
     }
 
     /* Reduce card padding for better fit */
-    .winner-left .winner-card,
-    .winner-right {
+    .winner-card {
         padding: 2rem;
     }
 
-    /* Reduce winner image size */
+    /* Increase winner image size and optimize spacing */
     .winner-image-container {
-        width: 120px;
-        height: 120px;
-        margin-bottom: 1rem;
+        width: 200px;
+        height: 200px;
+        margin-bottom: 1.5rem;
     }
 
     .winner-emoji {
-        font-size: 3.5rem !important;
+        font-size: 5rem !important;
     }
 
-    /* Ensure consistent spacing for winner info section */
+    /* Optimize spacing in winner info and details */
     .winner-info {
-        margin-bottom: 1.5rem;
-        min-height: 120px; /* Account for name, designer, materials */
-    }
-
-    .winner-image-container {
-        margin-bottom: 1.5rem;
-    }
-
-    /* Keep leaderboard header but ensure consistent spacing */
-    .winner-right .leaderboard-header {
         margin-bottom: 1rem;
-        min-height: 1.5rem;
+    }
+
+    .winner-details {
+        margin-top: 1rem;
+    }
+
+    .winner-description {
+        margin-bottom: 1.5rem;
     }
 
     /* Remove border/line above leaderboard title */
@@ -1024,6 +995,14 @@ body.ponder-mode {
     pointer-events: auto;
     cursor: pointer;
     animation: gentle-border-pulse 2s ease-in-out infinite;
+}
+
+/* Style controversy messages */
+.poll-description {
+    text-transform: uppercase;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
 }
 
 @keyframes gentle-border-pulse {
