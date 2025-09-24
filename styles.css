@@ -514,9 +514,9 @@ body.ponder-mode {
 }
 
 .title {
-    font-size: clamp(18px, 1.125rem + ((1vw - 3.2px) * 0.417), 22px);
+    font-size: clamp(24px, 1.5rem + ((1vw - 3.2px) * 0.625), 32px);
     font-weight: 700;
-    letter-spacing: 0.05em;
+    letter-spacing: -0.02em;
     text-transform: uppercase;
     color: #636363;
     margin-bottom: 0.5rem;
@@ -557,6 +557,164 @@ body.ponder-mode {
     position: relative;
     contain: layout style paint;
     isolation: isolate;
+}
+
+/* Desktop-only: Two-column winner layout */
+@media (min-width: 768px) {
+    .winner-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+
+    .winner-left .winner-card,
+    .winner-right {
+        background: #ffffff;
+        border: 1px solid #e5e5e5;
+        padding: 3rem;
+        max-width: none;
+        width: 100%;
+        text-align: center;
+        position: relative;
+        contain: layout style paint;
+        isolation: isolate;
+    }
+
+    .winner-right {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+
+    /* Create consistent structure between columns */
+    .winner-left .winner-card {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .winner-right {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    /* Align titles at same height */
+    .winner-title,
+    .winner-right .leaderboard-title {
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+        min-height: 2rem; /* Ensure consistent height */
+    }
+
+    /* Flexible content areas */
+    .winner-details {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        margin-top: auto;
+    }
+
+    .winner-leaderboard {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 1.5rem;
+    }
+
+    .leaderboard-list {
+        flex-grow: 1;
+        min-height: 200px; /* Minimum height for leaderboard content */
+    }
+
+    /* Align bottom elements */
+    .winner-link,
+    .winner-right .reset-button {
+        margin-top: auto;
+        align-self: center;
+    }
+
+    /* Hide header on winner screen */
+    .winner-screen .header {
+        display: none;
+    }
+
+    /* Adjust winner screen padding without header */
+    .winner-screen .game-over-screen {
+        padding-top: 2rem;
+        min-height: calc(100vh - 80px); /* Account for fixed site header */
+    }
+
+    /* Make leaderboard fonts larger to match left column hierarchy */
+    .winner-right .leaderboard-title {
+        font-size: clamp(16px, 1rem + ((1vw - 3.2px) * 0.417), 20px);
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: #636363;
+        margin-bottom: 1.5rem;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .winner-right .leaderboard-header {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .winner-right .leaderboard-item {
+        font-size: 14px;
+        margin-bottom: 0.75rem;
+    }
+
+    .winner-right .leaderboard-product-name {
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    /* Reduce card padding for better fit */
+    .winner-left .winner-card,
+    .winner-right {
+        padding: 2rem;
+    }
+
+    /* Reduce winner image size */
+    .winner-image-container {
+        width: 120px;
+        height: 120px;
+        margin-bottom: 1rem;
+    }
+
+    .winner-emoji {
+        font-size: 3.5rem !important;
+    }
+
+    /* Ensure consistent spacing for winner info section */
+    .winner-info {
+        margin-bottom: 1.5rem;
+        min-height: 120px; /* Account for name, designer, materials */
+    }
+
+    .winner-image-container {
+        margin-bottom: 1.5rem;
+    }
+
+    /* Keep leaderboard header but ensure consistent spacing */
+    .winner-right .leaderboard-header {
+        margin-bottom: 1rem;
+        min-height: 1.5rem;
+    }
+
+    /* Remove border/line above leaderboard title */
+    .winner-leaderboard {
+        border-top: none !important;
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
 }
 
 .winner-title {
@@ -858,6 +1016,13 @@ body.ponder-mode {
     cursor: not-allowed;
     pointer-events: none;
     border: 1px dashed #999999;
+}
+
+/* Allow links to still be clickable during ponder time */
+.furniture-card.ponder-disabled .card-link,
+.furniture-card.ponder-disabled .card-designer {
+    pointer-events: auto;
+    cursor: pointer;
     animation: gentle-border-pulse 2s ease-in-out infinite;
 }
 
