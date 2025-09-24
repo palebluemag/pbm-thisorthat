@@ -790,8 +790,10 @@ async function handleChoice(chosenItem) {
         gameState.currentPair[1].id
     );
     
-    // Don't show results yet - wait for current round's data
-    gameState.showResults = false;
+    // Show results immediately for continue button, but delay poll data display
+    gameState.showResults = true;
+    gameState.pollDataReady = false; // Flag to control poll display
+    updateDisplay();
     
     // Handle async operations
     try {
@@ -812,8 +814,8 @@ async function handleChoice(chosenItem) {
             console.log('Not enough battles between these products, hiding percentages');
         }
         
-        // Now show results with current round's data
-        gameState.showResults = true;
+        // Mark poll data as ready and show results
+        gameState.pollDataReady = true;
         showPollResults();
 
         // Start auto-continue timer
@@ -825,8 +827,8 @@ async function handleChoice(chosenItem) {
             right: null
         };
 
-        // Show results even with no data
-        gameState.showResults = true;
+        // Mark poll data as ready (even with no data) and show results
+        gameState.pollDataReady = true;
         showPollResults();
 
         // Start auto-continue timer
@@ -859,6 +861,11 @@ function showPollResults() {
 
     const leftChosen = gameState.chosenItem === gameState.currentPair[0];
     const rightChosen = gameState.chosenItem === gameState.currentPair[1];
+
+    // Only show if poll data is ready to prevent flash of old data
+    if (!gameState.pollDataReady) {
+        return;
+    }
 
     // Reset progress bars to prevent flash
     elements.leftPollFill.style.width = '0%';
@@ -1022,6 +1029,7 @@ function moveToNextRound() {
     
     // Clear poll results data for clean transition
     gameState.pollResults = { left: null, right: null };
+    gameState.pollDataReady = false; // Reset poll data flag
 
     // Winner stays on the left, challenger on the right
     gameState.currentPair = [gameState.chosenItem, nextChallenger];
