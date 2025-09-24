@@ -1597,18 +1597,18 @@ body.ponder-mode {
         justify-content: center;
         flex-shrink: 0;
     }
-    
+
     .poll-results {
         position: absolute;
         bottom: 0;
-        left: 0;
-        right: 0;
+        left: 0.5rem;
+        right: 0.5rem;
         height: 2.5rem;
-        width: 100%;
+        width: auto;
         z-index: 2;
         margin-top: 0;
     }
-    
+
     .poll-content {
         padding: 0.1875rem;
         height: 100%;
