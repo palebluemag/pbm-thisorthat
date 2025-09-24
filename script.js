@@ -790,9 +790,8 @@ async function handleChoice(chosenItem) {
         gameState.currentPair[1].id
     );
     
-    // Show results immediately, update with data when ready
-    gameState.showResults = true;
-    updateDisplay();
+    // Don't show results yet - wait for current round's data
+    gameState.showResults = false;
     
     // Handle async operations
     try {
@@ -813,9 +812,10 @@ async function handleChoice(chosenItem) {
             console.log('Not enough battles between these products, hiding percentages');
         }
         
-        // Update poll results with real data
+        // Now show results with current round's data
+        gameState.showResults = true;
         showPollResults();
-        
+
         // Start auto-continue timer
         startAutoContinueTimer();
     } catch (error) {
@@ -824,8 +824,11 @@ async function handleChoice(chosenItem) {
             left: null,
             right: null
         };
+
+        // Show results even with no data
+        gameState.showResults = true;
         showPollResults();
-        
+
         // Start auto-continue timer
         startAutoContinueTimer();
     }
