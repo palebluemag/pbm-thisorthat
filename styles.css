@@ -999,10 +999,14 @@ body.ponder-mode {
 
 /* Style controversy messages */
 .poll-description {
+    font-family: 'Diatype', sans-serif;
     text-transform: uppercase;
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 0.6875rem;
+    font-weight: 400;
     letter-spacing: 0.5px;
+    color: #999999;
+    text-align: center;
+    margin-top: 0.25rem;
 }
 
 @keyframes gentle-border-pulse {
@@ -1297,11 +1301,12 @@ body.ponder-mode {
 }
 
 .poll-label {
+    font-family: 'Diatype', sans-serif;
     font-size: 0.75rem;
-    font-weight: 300;
+    font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: #333333;
+    letter-spacing: 0.5px;
+    color: #666666;
 }
 
 .poll-label.chosen {
@@ -1309,8 +1314,11 @@ body.ponder-mode {
 }
 
 .poll-percentage {
-    font-size: 0.875rem;
-    font-weight: 300;
+    font-family: 'Diatype', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     color: #000000;
 }
 
@@ -1334,12 +1342,6 @@ body.ponder-mode {
     background: #5a8a5a;
 }
 
-.poll-description {
-    font-size: 0.75rem;
-    color: #666666;
-    font-weight: 300;
-    text-align: center;
-}
 
 
 /* Controls */
@@ -1797,10 +1799,10 @@ body.ponder-mode {
     .poll-results {
         position: absolute;
         bottom: 0;
-        left: 0;
-        right: 0;
+        left: 0.5rem;
+        right: 0.5rem;
         height: 2.5rem;
-        width: 100%;
+        width: auto;
         z-index: 2;
         margin-top: 0;
     }
