@@ -840,9 +840,10 @@ function startAutoContinueTimer() {
     
     gameState.autoContinueTimer = setTimeout(() => {
         if (gameState.showResults && !gameState.gameOver) {
-            // Hide continue button and move to next round
+            // Hide continue button and poll results, then move to next round
             elements.continueButton.classList.remove('show');
             elements.continueButton.classList.add('hidden');
+            hidePollResults(); // Clear data when auto-continuing
             moveToNextRound();
         }
     }, 8000);
@@ -1016,6 +1017,9 @@ function moveToNextRound() {
     // Add the new challenger to used items
     gameState.usedItems.push(nextChallenger);
     
+    // Clear poll results data for clean transition
+    gameState.pollResults = { left: null, right: null };
+
     // Winner stays on the left, challenger on the right
     gameState.currentPair = [gameState.chosenItem, nextChallenger];
     gameState.round++;
@@ -1023,7 +1027,10 @@ function moveToNextRound() {
     gameState.showResults = false;
     gameState.isLocked = true;
     gameState.ponderTime = 3;
-    
+
+    // Ensure poll results are hidden
+    hidePollResults();
+
     updateDisplay();
     startPonderTime();
 }
@@ -1175,9 +1182,10 @@ elements.playButton.addEventListener('click', startGame);
 elements.leftCard.addEventListener('click', () => handleChoice(gameState.currentPair[0]));
 elements.rightCard.addEventListener('click', () => handleChoice(gameState.currentPair[1]));
 elements.continueButton.addEventListener('click', () => {
-    // Hide continue button immediately to prevent jump
+    // Hide continue button and poll results immediately to prevent jump
     elements.continueButton.classList.remove('show');
     elements.continueButton.classList.add('hidden');
+    hidePollResults(); // Clear data when transitioning
     moveToNextRound();
 });
 elements.resetButton.addEventListener('click', resetGame);
