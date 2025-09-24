@@ -856,82 +856,66 @@ function showPollResults() {
     const leftChosen = gameState.chosenItem === gameState.currentPair[0];
     const rightChosen = gameState.chosenItem === gameState.currentPair[1];
 
-    // Completely reset and hide poll results first
-    hidePollResults();
+    // Reset progress bars to prevent flash
+    elements.leftPollFill.style.width = '0%';
+    elements.rightPollFill.style.width = '0%';
+    elements.leftPollFill.style.transition = 'none';
+    elements.rightPollFill.style.transition = 'none';
 
-    // Wait a moment, then prepare fresh display
+    leftResults.classList.remove('hidden');
+    rightResults.classList.remove('hidden');
+
+    // Add show class for fade animation
     setTimeout(() => {
-        // Reset everything to clean state
-        elements.leftPollFill.style.width = '0%';
-        elements.rightPollFill.style.width = '0%';
-        elements.leftPollFill.style.transition = 'none';
-        elements.rightPollFill.style.transition = 'none';
+        leftResults.classList.add('show');
+        rightResults.classList.add('show');
+    }, 50);
 
-        // Set up labels immediately
-        elements.leftPollLabel.textContent = leftChosen ? 'Your Choice' : 'Not Chosen';
-        elements.leftPollLabel.classList.toggle('chosen', leftChosen);
-        elements.rightPollLabel.textContent = rightChosen ? 'Your Choice' : 'Not Chosen';
-        elements.rightPollLabel.classList.toggle('chosen', rightChosen);
+    // Set up labels
+    elements.leftPollLabel.textContent = leftChosen ? 'Your Choice' : 'Not Chosen';
+    elements.leftPollLabel.classList.toggle('chosen', leftChosen);
+    elements.rightPollLabel.textContent = rightChosen ? 'Your Choice' : 'Not Chosen';
+    elements.rightPollLabel.classList.toggle('chosen', rightChosen);
 
-        // Pre-calculate all data to avoid layout shifts
-        let leftPercentage, rightPercentage;
-        let leftMessage = '', rightMessage = '';
+    // Calculate percentages
+    let leftPercentage, rightPercentage;
+    if (gameState.pollResults.left !== null && gameState.pollResults.right !== null) {
+        leftPercentage = gameState.pollResults.left;
+        rightPercentage = gameState.pollResults.right;
+    } else {
+        leftPercentage = Math.floor(Math.random() * 101);
+        rightPercentage = Math.floor(Math.random() * 101);
+    }
 
-        if (gameState.pollResults.left !== null && gameState.pollResults.right !== null) {
-            // Production: Use real data
-            leftPercentage = gameState.pollResults.left;
-            rightPercentage = gameState.pollResults.right;
-        } else {
-            // Testing: Use mock data
-            leftPercentage = Math.floor(Math.random() * 101);
-            rightPercentage = Math.floor(Math.random() * 101);
-        }
+    // Set text content
+    elements.leftPollPercentage.textContent = `${leftPercentage}% Chose This`;
+    elements.rightPollPercentage.textContent = `${rightPercentage}% Chose This`;
+    elements.leftPollDescription.textContent = leftChosen ? getControversyMessage(leftPercentage) : '';
+    elements.rightPollDescription.textContent = rightChosen ? getControversyMessage(rightPercentage) : '';
 
-        // Generate messages for chosen items only
-        if (leftChosen) leftMessage = getControversyMessage(leftPercentage);
-        if (rightChosen) rightMessage = getControversyMessage(rightPercentage);
+    // Ensure consistent height
+    if (!elements.leftPollDescription.textContent) {
+        elements.leftPollDescription.innerHTML = '&nbsp;';
+    }
+    if (!elements.rightPollDescription.textContent) {
+        elements.rightPollDescription.innerHTML = '&nbsp;';
+    }
 
-        // Set all text content at once to prevent layout shifts
-        elements.leftPollPercentage.textContent = `${leftPercentage}% Chose This`;
-        elements.rightPollPercentage.textContent = `${rightPercentage}% Chose This`;
-        elements.leftPollDescription.textContent = leftMessage;
-        elements.rightPollDescription.textContent = rightMessage;
+    // Set up styling
+    elements.leftPollFill.classList.toggle('chosen', leftChosen);
+    elements.rightPollFill.classList.toggle('chosen', rightChosen);
+    const leftContent = leftResults.querySelector('.poll-content');
+    const rightContent = rightResults.querySelector('.poll-content');
+    leftContent.classList.toggle('chosen', leftChosen);
+    rightContent.classList.toggle('chosen', rightChosen);
 
-        // Ensure consistent height
-        if (!elements.leftPollDescription.textContent) {
-            elements.leftPollDescription.innerHTML = '&nbsp;';
-        }
-        if (!elements.rightPollDescription.textContent) {
-            elements.rightPollDescription.innerHTML = '&nbsp;';
-        }
-
-        // Set up poll content styling
-        elements.leftPollFill.classList.toggle('chosen', leftChosen);
-        elements.rightPollFill.classList.toggle('chosen', rightChosen);
-        const leftContent = leftResults.querySelector('.poll-content');
-        const rightContent = rightResults.querySelector('.poll-content');
-        leftContent.classList.toggle('chosen', leftChosen);
-        rightContent.classList.toggle('chosen', rightChosen);
-
-        // Show poll results
-        leftResults.classList.remove('hidden');
-        rightResults.classList.remove('hidden');
-
-        // Trigger show animation
-        setTimeout(() => {
-            leftResults.classList.add('show');
-            rightResults.classList.add('show');
-
-            // Start bar animations after content is visible
-            setTimeout(() => {
-                elements.leftPollFill.style.transition = 'width 1s ease-out';
-                elements.rightPollFill.style.transition = 'width 1s ease-out';
-                elements.leftPollFill.style.width = `${leftPercentage}%`;
-                elements.rightPollFill.style.width = `${rightPercentage}%`;
-            }, 100);
-        }, 100);
-
-    }, 100); // Brief pause to ensure clean state
+    // Animate progress bars
+    setTimeout(() => {
+        elements.leftPollFill.style.transition = 'width 1s ease-out';
+        elements.rightPollFill.style.transition = 'width 1s ease-out';
+        elements.leftPollFill.style.width = `${leftPercentage}%`;
+        elements.rightPollFill.style.width = `${rightPercentage}%`;
+    }, 200);
 }
 
 // Hide poll results
