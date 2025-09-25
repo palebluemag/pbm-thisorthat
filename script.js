@@ -1207,6 +1207,30 @@ elements.rightLink.addEventListener('click', (e) => e.stopPropagation());
 elements.leftDesigner.addEventListener('click', (e) => e.stopPropagation());
 elements.rightDesigner.addEventListener('click', (e) => e.stopPropagation());
 
+// Keyboard navigation for desktop users
+document.addEventListener('keydown', (e) => {
+    // Only handle keyboard input during active gameplay (not during ponder time, results, or game over)
+    if (gameState.gameOver || gameState.isLocked || gameState.showResults || !gameState.currentPair.length) {
+        return;
+    }
+
+    // Check if we're in the game board (not start screen or other modals)
+    if (!elements.startScreen.classList.contains('hidden') || elements.gameOverScreen.classList.contains('show')) {
+        return;
+    }
+
+    switch(e.key) {
+        case 'ArrowLeft':
+            e.preventDefault();
+            handleChoice(gameState.currentPair[0]); // Left card
+            break;
+        case 'ArrowRight':
+            e.preventDefault();
+            handleChoice(gameState.currentPair[1]); // Right card
+            break;
+    }
+});
+
 // Set theme display function
 function updateThemeDisplay() {
     const themeElement = document.getElementById('gameTheme');
