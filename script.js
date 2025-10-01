@@ -7,7 +7,7 @@ const API_BASE_URL = window.location.origin;
 // Game configuration
 const gameConfig = {
     currentTheme: 'Martin Clausen\'s Picks', // Change this to set the current theme
-    currentCategory: null // Change this to filter by category (e.g., 'Chairs', 'Tables', 'Lighting', etc.)
+    currentCategory: 'Martin Clausen\'s Picks' // Change this to filter by category (e.g., 'Chairs', 'Tables', 'Lighting', etc.)
 };
 
 // API service functions

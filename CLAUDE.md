@@ -84,11 +84,12 @@ The design emphasizes clean typography, ample whitespace, and editorial presenta
 **Context**: Changed active game theme from Coffee Table to Martin Clausen's Picks
 **Changes Made**:
 - Updated `gameConfig.currentTheme` from 'Coffee Tables' to 'Martin Clausen\'s Picks'
-- Updated `gameConfig.currentCategory` from 'Coffee Table' to `null` (no category filter)
+- Updated `gameConfig.currentCategory` from 'Coffee Table' to 'Martin Clausen\'s Picks' (all products in Supabase have this category)
 - Removed Noguchi Coffee Table specific logic that always placed it as initial defender
 - Restored original random shuffling for all products
 - Updated UI text references in HTML and CSS comments
 **Files Modified**: `script.js` lines 9-10, 445-450, 465-471; `index.html` lines 61, 219; `styles.css` lines 1071, 1079
+**Database**: All products in Supabase have been labeled with category "Martin Clausen's Picks"
 **Revert Instructions**: Change theme back to 'Coffee Tables', set category to 'Coffee Table', and restore Noguchi-specific initialization logic
 
 ### Coffee Table Game Logic Changes (2025-01-19) [REVERTED]
