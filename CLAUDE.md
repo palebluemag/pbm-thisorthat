@@ -80,12 +80,23 @@ The design emphasizes clean typography, ample whitespace, and editorial presenta
 **Git Commits**:
 - 9112848: "Fix grammar error and update desktop product images to square aspect ratio"
 
-### Coffee Table Game Logic Changes (2025-01-19)
-**Context**: Coffee Table theme - Noguchi always starts as defender
+### Martin Clausen's Picks Theme Update (2025-01-19)
+**Context**: Changed active game theme from Coffee Table to Martin Clausen's Picks
 **Changes Made**:
+- Updated `gameConfig.currentTheme` from 'Coffee Tables' to 'Martin Clausen\'s Picks'
+- Updated `gameConfig.currentCategory` from 'Coffee Table' to `null` (no category filter)
+- Removed Noguchi Coffee Table specific logic that always placed it as initial defender
+- Restored original random shuffling for all products
+- Updated UI text references in HTML and CSS comments
+**Files Modified**: `script.js` lines 9-10, 445-450, 465-471; `index.html` lines 61, 219; `styles.css` lines 1071, 1079
+**Revert Instructions**: Change theme back to 'Coffee Tables', set category to 'Coffee Table', and restore Noguchi-specific initialization logic
+
+### Coffee Table Game Logic Changes (2025-01-19) [REVERTED]
+**Context**: Coffee Table theme - Noguchi always starts as defender [NOW REMOVED]
+**Changes Made**: [REMOVED IN Martin Clausen's Picks update]
 - Modified `initializeGame()` function to always place Noguchi Coffee Table as initial defender (left side)
 - Ensures Noguchi is removed from remaining pool to prevent duplicates
 - No extra votes counted for Noguchi - it's just the starting matchup
 - Game logic otherwise unchanged (10 rounds, normal elimination)
-**Files Modified**: `script.js` lines ~395-441
-**Revert Instructions**: Remove Noguchi-specific logic and restore original random shuffling
+**Files Modified**: `script.js` lines ~395-441 [REVERTED]
+**Revert Instructions**: Remove Noguchi-specific logic and restore original random shuffling [COMPLETED]

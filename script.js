@@ -6,8 +6,8 @@ const API_BASE_URL = window.location.origin;
 
 // Game configuration
 const gameConfig = {
-    currentTheme: 'Coffee Tables', // Change this to set the current theme
-    currentCategory: 'Coffee Table' // Change this to filter by category (e.g., 'Chairs', 'Tables', 'Lighting', etc.)
+    currentTheme: 'Martin Clausen\'s Picks', // Change this to set the current theme
+    currentCategory: null // Change this to filter by category (e.g., 'Chairs', 'Tables', 'Lighting', etc.)
 };
 
 // API service functions
@@ -442,31 +442,12 @@ async function initializeGame() {
             products = fallbackFurnitureItems;
         }
         
-        // Find Noguchi Coffee Table to use as initial defender
-        const noguchiTable = products.find(item =>
-            item.name && item.name.toLowerCase().includes('noguchi') &&
-            item.name.toLowerCase().includes('coffee')
-        );
-
-        if (noguchiTable) {
-            console.log('Found Noguchi Coffee Table:', noguchiTable.name);
-        } else {
-            console.warn('Noguchi Coffee Table not found in products');
-        }
-
-        // Remove Noguchi from products pool to avoid duplicates
-        const productsWithoutNoguchi = products.filter(item => item !== noguchiTable);
-
-        // Shuffle remaining products and select 15 (plus Noguchi = 16 total)
-        const shuffled = [...productsWithoutNoguchi].sort(() => 0.5 - Math.random());
-        const selectedOthers = shuffled.slice(0, Math.min(15, shuffled.length));
-
-        // Create game pool with Noguchi + 15 others
-        const selected = noguchiTable ? [noguchiTable, ...selectedOthers] : selectedOthers.slice(0, 16);
+        // Shuffle products and select 16 for the game
+        const shuffled = [...products].sort(() => 0.5 - Math.random());
+        const selected = shuffled.slice(0, Math.min(16, shuffled.length));
 
         gameState.gamePool = selected;
-        // Always start with Noguchi as defender (left) if available
-        gameState.currentPair = noguchiTable ? [noguchiTable, selected[1]] : [selected[0], selected[1]];
+        gameState.currentPair = [selected[0], selected[1]];
         gameState.usedItems = [gameState.currentPair[0], gameState.currentPair[1]];
         gameState.round = 1;
         gameState.gameOver = false;
@@ -482,19 +463,12 @@ async function initializeGame() {
         startPonderTime();
     } catch (error) {
         console.error('Error initializing game:', error);
-        // Fallback to hardcoded data with same Noguchi logic
-        const noguchiTable = fallbackFurnitureItems.find(item =>
-            item.name && item.name.toLowerCase().includes('noguchi') &&
-            item.name.toLowerCase().includes('coffee')
-        );
-
-        const itemsWithoutNoguchi = fallbackFurnitureItems.filter(item => item !== noguchiTable);
-        const shuffled = [...itemsWithoutNoguchi].sort(() => 0.5 - Math.random());
-        const selectedOthers = shuffled.slice(0, 15);
-        const selected = noguchiTable ? [noguchiTable, ...selectedOthers] : selectedOthers.slice(0, 16);
+        // Fallback to hardcoded data
+        const shuffled = [...fallbackFurnitureItems].sort(() => 0.5 - Math.random());
+        const selected = shuffled.slice(0, 16);
 
         gameState.gamePool = selected;
-        gameState.currentPair = noguchiTable ? [noguchiTable, selected[1]] : [selected[0], selected[1]];
+        gameState.currentPair = [selected[0], selected[1]];
         gameState.usedItems = [gameState.currentPair[0], gameState.currentPair[1]];
         gameState.round = 1;
         gameState.gameOver = false;
