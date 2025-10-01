@@ -566,7 +566,7 @@ body.ponder-mode {
         min-height: auto;
         align-items: flex-start;
         justify-content: center;
-        margin-top: -2rem;
+        margin-top: -4rem;
     }
 
     .winner-card {
@@ -714,12 +714,19 @@ body.ponder-mode {
         margin-top: 0.75rem;
     }
 
+    /* Style leaderboard headers - make them larger */
+    .leaderboard-header span {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #000000;
+    }
+
     .leaderboard-list {
         margin-top: 0.5rem;
         margin-bottom: 1rem;
     }
 
-    /* Position button to align with Learn More link height */
+    /* Position button higher up to align with Learn More link height */
     .reset-button {
         background: #000000;
         color: #ffffff;
@@ -735,7 +742,7 @@ body.ponder-mode {
         text-transform: uppercase;
         letter-spacing: 0.05em;
         position: absolute;
-        bottom: 1.5rem;
+        bottom: 2.5rem;
         left: 50%;
         transform: translateX(-50%);
     }
