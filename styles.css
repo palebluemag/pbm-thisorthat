@@ -562,10 +562,11 @@ body.ponder-mode {
 /* Desktop-only: Two-column winner layout */
 @media (min-width: 768px) {
     .game-over-screen {
-        padding: 0.5rem 0;
+        padding: 0;
         min-height: auto;
         align-items: flex-start;
         justify-content: center;
+        margin-top: -2rem;
     }
 
     .winner-card {
@@ -611,54 +612,55 @@ body.ponder-mode {
         text-align: center;
     }
 
-    .leaderboard-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin-bottom: 1.25rem;
-        color: #000000;
-        text-align: center;
-        margin-top: 0;
+    /* Fix leaderboard title - target it properly */
+    .winner-right .leaderboard-title {
+        font-size: 1.5rem !important;
+        font-weight: 700 !important;
+        margin-bottom: 1.25rem !important;
+        color: #000000 !important;
+        text-align: center !important;
+        margin-top: 0 !important;
     }
 
-    /* Winner image - smaller */
+    /* Winner image - LARGER as requested */
     .winner-image-container {
         margin-bottom: 1.25rem;
-        height: 120px;
+        height: 180px;
         display: flex;
         align-items: center;
         justify-content: center;
     }
 
     .winner-emoji {
-        font-size: 4rem !important;
-        width: 120px;
-        height: 120px;
+        font-size: 7rem !important;
+        width: 180px;
+        height: 180px;
         display: flex;
         align-items: center;
         justify-content: center;
     }
 
     .winner-emoji img {
-        width: 120px !important;
-        height: 120px !important;
+        width: 180px !important;
+        height: 180px !important;
         object-fit: cover;
         border-radius: 4px;
     }
 
-    /* Winner info spacing - tighter */
+    /* Winner info spacing - make text much smaller */
     .winner-info {
         margin-bottom: 1.25rem;
         text-align: center;
     }
 
     .winner-name {
-        font-size: 1.1rem;
+        font-size: 0.95rem;
         font-weight: 600;
         margin-bottom: 0.25rem;
     }
 
     .winner-designer {
-        font-size: 0.95rem;
+        font-size: 0.8rem;
         margin-bottom: 0.25rem;
         display: block;
         color: #333;
@@ -670,7 +672,7 @@ body.ponder-mode {
     }
 
     .winner-materials {
-        font-size: 0.85rem;
+        font-size: 0.75rem;
         color: #666;
         margin-bottom: 0;
     }
@@ -681,13 +683,13 @@ body.ponder-mode {
     }
 
     .winner-description {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         line-height: 1.3;
         margin-bottom: 0.75rem;
     }
 
     .winner-link {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         text-decoration: underline;
         color: #000000;
     }
