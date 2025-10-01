@@ -1183,13 +1183,29 @@ elements.rightDesigner.addEventListener('click', (e) => e.stopPropagation());
 
 // Keyboard navigation for desktop users
 document.addEventListener('keydown', (e) => {
-    // Only handle keyboard input during active gameplay (not during ponder time, results, or game over)
-    if (gameState.gameOver || gameState.isLocked || gameState.showResults || !gameState.currentPair.length) {
+    // Check if we're in the game board (not start screen or other modals)
+    if (!elements.startScreen.classList.contains('hidden') || elements.gameOverScreen.classList.contains('show')) {
         return;
     }
 
-    // Check if we're in the game board (not start screen or other modals)
-    if (!elements.startScreen.classList.contains('hidden') || elements.gameOverScreen.classList.contains('show')) {
+    // Handle Continue button during results phase
+    if (gameState.showResults && !gameState.gameOver) {
+        switch(e.key) {
+            case ' ': // Spacebar
+            case 'Enter':
+                e.preventDefault();
+                // Simulate continue button click
+                elements.continueButton.classList.remove('show');
+                elements.continueButton.classList.add('hidden');
+                hidePollResults();
+                moveToNextRound();
+                break;
+        }
+        return;
+    }
+
+    // Handle card selection during active gameplay (not during ponder time, results, or game over)
+    if (gameState.gameOver || gameState.isLocked || gameState.showResults || !gameState.currentPair.length) {
         return;
     }
 

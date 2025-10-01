@@ -593,13 +593,15 @@ body.ponder-mode {
     /* Right column - Leaderboard and button */
     .winner-right {
         flex: 1;
+        background: #ffffff;
+        border: 1px solid #e5e5e5;
+        padding: 2rem;
         display: flex;
         flex-direction: column;
-        gap: 0;
-        position: relative;
+        text-align: center;
     }
 
-    /* Style the titles to match */
+    /* Style the titles to match exactly */
     .winner-title {
         font-size: 1.75rem;
         font-weight: 700;
@@ -693,37 +695,39 @@ body.ponder-mode {
         color: #333;
     }
 
-    /* Right column styling - properly aligned */
+    /* Leaderboard content styling */
     .winner-leaderboard {
-        background: #ffffff;
-        border: 1px solid #e5e5e5;
-        padding: 2rem;
+        background: transparent;
+        border: none;
+        padding: 0;
         margin: 0;
         flex: 1;
         display: flex;
         flex-direction: column;
-        min-height: 0;
+        margin-bottom: 1.5rem;
     }
 
+    /* Position button at same level as Learn More link */
     .reset-button {
         background: #000000;
         color: #ffffff;
-        border: 1px solid #e5e5e5;
-        border-top: none;
-        padding: 1rem 1.5rem;
+        border: 1px solid #000000;
+        padding: 0.75rem 1.5rem;
         margin: 0;
         width: 60%;
-        align-self: flex-start;
+        align-self: center;
         text-align: center;
         cursor: pointer;
         font-weight: 600;
-        font-size: 0.85rem;
+        font-size: 0.9rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
+        margin-top: auto;
     }
 
     .reset-button:hover {
         background: #333333;
+        border-color: #333333;
     }
 
     /* Hide header on winner screen */
