@@ -454,7 +454,7 @@ async function initializeGame() {
         gameState.winner = null;
         gameState.chosenItem = null;
         gameState.isLocked = true;
-        gameState.ponderTime = 5;
+        gameState.ponderTime = 3;
         gameState.showResults = false;
         gameState.pollResults = { left: 0, right: 0 };
         
@@ -475,7 +475,7 @@ async function initializeGame() {
         gameState.winner = null;
         gameState.chosenItem = null;
         gameState.isLocked = true;
-        gameState.ponderTime = 5;
+        gameState.ponderTime = 3;
         gameState.showResults = false;
         gameState.pollResults = { left: 0, right: 0 };
         
@@ -654,7 +654,7 @@ function startPonderTime() {
     elements.ponderMessage.classList.add('ponder-fade-in');
     
     // Start countdown timer with smooth fade in
-    let countdown = 5;
+    let countdown = 3;
     elements.vsBadge.classList.remove('stable');
     elements.vsBadge.textContent = countdown;
     elements.vsBadge.classList.add('countdown', 'countdown-fade-in');
@@ -733,7 +733,7 @@ function startPonderTime() {
             updateCardStates();
             showSelectionPrompt();
         }, 800);
-    }, 5000);
+    }, 3000);
 }
 
 // Handle choice

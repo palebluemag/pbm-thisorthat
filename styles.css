@@ -565,63 +565,70 @@ body.ponder-mode {
     .winner-card {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 2rem;
+        gap: 3rem;
         max-width: 1200px;
         grid-template-areas:
-            "winner-content leaderboard-content"
-            "winner-content reset-button";
+            "winner-title leaderboard"
+            "winner-image leaderboard"
+            "winner-info leaderboard"
+            "winner-details reset-button";
+        text-align: left;
+        align-items: start;
     }
 
-    /* Left column: winner content */
-    .winner-title,
-    .winner-image-container,
-    .winner-info,
+    /* Left column elements positioned individually */
+    .winner-title {
+        grid-area: winner-title;
+        margin-bottom: 1rem;
+    }
+
+    .winner-image-container {
+        grid-area: winner-image;
+        margin-bottom: 1rem;
+    }
+
+    .winner-info {
+        grid-area: winner-info;
+        margin-bottom: 1rem;
+    }
+
     .winner-details {
-        grid-area: winner-content;
+        grid-area: winner-details;
+        margin-bottom: 0;
     }
 
-    .winner-title { order: 1; }
-    .winner-image-container { order: 2; }
-    .winner-info { order: 3; }
-    .winner-details { order: 4; }
-
-    /* Create a wrapper for left content */
-    .winner-card {
-        grid-template-areas:
-            "left-content right-content";
-    }
-
-    .winner-title,
-    .winner-image-container,
-    .winner-info,
-    .winner-details {
-        grid-area: left-content;
-    }
-
-    .winner-leaderboard,
-    .reset-button {
-        grid-area: right-content;
-    }
-
-    /* Style right column to match left */
+    /* Right column elements */
     .winner-leaderboard {
+        grid-area: leaderboard;
         background: #ffffff;
         border: 1px solid #e5e5e5;
         padding: 2rem;
         border-radius: 0;
-        display: flex;
-        flex-direction: column;
-        height: fit-content;
+        margin-bottom: 0;
     }
 
     .reset-button {
-        background: #ffffff;
-        border: 1px solid #e5e5e5;
+        grid-area: reset-button;
+        background: #000000;
+        color: #ffffff;
+        border: 1px solid #000000;
         padding: 1rem 2rem;
-        margin-top: 1rem;
         border-radius: 0;
-        width: 100%;
+        width: fit-content;
+        min-width: 200px;
         text-align: center;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        justify-self: start;
+        align-self: start;
+    }
+
+    .reset-button:hover {
+        background: #333333;
+        border-color: #333333;
     }
 
     /* Hide header on winner screen */
