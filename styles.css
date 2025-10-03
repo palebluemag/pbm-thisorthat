@@ -358,9 +358,10 @@ body.ponder-mode {
 }
 
 .theme-name {
-    font-size: 28px;
-    font-weight: 500;
+    font-size: 24px;
+    font-weight: 700;
     margin-bottom: 0;
+    opacity: 0.7;
 }
 
 .modal-right {
