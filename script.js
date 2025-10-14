@@ -1,13 +1,11 @@
-// Debug: Check if script is loading
-console.log('Script started loading...');
 
 // API configuration
 const API_BASE_URL = window.location.origin;
 
 // Game configuration
 const gameConfig = {
-    currentTheme: 'Martin Clausen\'s Picks', // Change this to set the current theme
-    currentCategory: 'Martin Clausen\'s Picks' // Change this to filter by category (e.g., 'Chairs', 'Tables', 'Lighting', etc.)
+    currentTheme: 'Chairs', // Change this to set the current theme
+    currentCategory: 'Chairs' // Change this to filter by category (e.g., 'Chairs', 'Tables', 'Lighting', etc.)
 };
 
 // API service functions
@@ -66,10 +64,7 @@ const dbService = {
             }
 
             const data = await response.json();
-            
-            console.log(`Head-to-head stats: Product ${productA_id} vs ${productB_id}`);
-            console.log(`Product A: ${data.productA_percentage}%, Product B: ${data.productB_percentage}%, Total: ${data.totalBattles}`);
-            
+
             return data;
         } catch (error) {
             console.error('Error getting head-to-head stats:', error);
@@ -778,14 +773,12 @@ async function handleChoice(chosenItem) {
                 left: headToHeadStats.productA_percentage,
                 right: headToHeadStats.productB_percentage
             };
-            console.log(`Showing real data: ${headToHeadStats.totalBattles} battles between these products`);
         } else {
             // Don't show percentages - will display "Not enough data" message
             gameState.pollResults = {
                 left: null,
                 right: null
             };
-            console.log('Not enough battles between these products, hiding percentages');
         }
         
         // Mark poll data as ready and show results
