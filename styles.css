@@ -358,7 +358,7 @@ body.ponder-mode {
 }
 
 .theme-label {
-    font-size: 16px;
+    font-size: 12px;
     font-weight: 500;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -366,10 +366,10 @@ body.ponder-mode {
 }
 
 .theme-name {
-    font-size: 32px;
+    font-size: 24px;
     font-weight: 500;
     margin-bottom: 0;
-    opacity: 1.0;
+    opacity: 0.6;
 }
 
 .modal-right {
@@ -520,6 +520,22 @@ body.ponder-mode {
         width: 100%;
         padding: 0.8rem 1.5rem;
         font-size: 13px;
+    }
+}
+
+/* Desktop-only: Larger text and full opacity for start screen */
+@media (min-width: 769px) {
+    .theme-label {
+        font-size: 16px;
+    }
+
+    .theme-name {
+        font-size: 32px;
+        opacity: 1.0;
+    }
+
+    .desktop-image {
+        object-position: center 40%; /* Move image up - focal point at 40% from top */
     }
 }
 
