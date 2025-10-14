@@ -558,7 +558,7 @@ function updateCard(side, item) {
         img.style.width = '100%';
         img.style.height = '100%';
         img.style.objectFit = 'cover';
-        img.style.objectPosition = 'bottom';
+        img.style.objectPosition = 'center';
         img.style.borderRadius = '4px';
         
         // Handle image load errors - fallback to emoji
@@ -1033,7 +1033,7 @@ function showGameOverScreen() {
         img.style.width = '100%';
         img.style.height = '100%';
         img.style.objectFit = 'cover';
-        img.style.objectPosition = 'bottom';
+        img.style.objectPosition = 'center';
         img.style.borderRadius = '4px';
         
         // Handle image load errors - fallback to emoji
@@ -1347,7 +1347,7 @@ function createPreviewProductElement(product) {
         img.style.width = '100%';
         img.style.height = '100%';
         img.style.objectFit = 'cover';
-        img.style.objectPosition = 'bottom';
+        img.style.objectPosition = 'center';
         img.style.borderRadius = '4px';
         
         // Handle image load errors - fallback to emoji

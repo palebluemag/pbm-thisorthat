@@ -1207,7 +1207,7 @@ body.ponder-mode {
     height: 100%;
     aspect-ratio: 4/5 !important; /* Taller aspect ratio to accommodate chair images */
     object-fit: cover;
-    object-position: bottom; /* Anchor from bottom - crops top if needed */
+    object-position: center; /* Center anchoring for balanced cropping */
     display: flex;
     align-items: center;
     justify-content: center;
