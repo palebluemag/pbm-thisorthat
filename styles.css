@@ -1197,7 +1197,7 @@ body.ponder-mode {
     border-right: 1px solid #e5e5e5;
     overflow: hidden;
     position: relative;
-    aspect-ratio: 1; /* CHANGED: was 4/5, changed to 1 for Martin Clausen's Picks theme (2025-01-19) */
+    aspect-ratio: 4/5; /* Taller aspect ratio to accommodate chair images */
 }
 
 .card-emoji {
@@ -1205,7 +1205,7 @@ body.ponder-mode {
     line-height: 1;
     width: 100%;
     height: 100%;
-    aspect-ratio: 1 !important; /* CHANGED: was 4/5, changed to 1 for Martin Clausen's Picks theme (2025-01-19) */
+    aspect-ratio: 4/5 !important; /* Taller aspect ratio to accommodate chair images */
     object-fit: cover;
     display: flex;
     align-items: center;
