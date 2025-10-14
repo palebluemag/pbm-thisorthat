@@ -535,7 +535,7 @@ body.ponder-mode {
     }
 
     .desktop-image {
-        object-position: center 30%; /* Move chair up - focal point at 30% from top */
+        object-position: center 65%; /* Move chair up - shows more of bottom */
     }
 }
 
