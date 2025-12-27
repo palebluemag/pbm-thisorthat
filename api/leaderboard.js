@@ -16,39 +16,52 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const { limit = 5 } = req.query;
+    const { limit = 5, category } = req.query;
     const limitNum = parseInt(limit, 10);
-    
+
     if (limitNum < 1 || limitNum > 50) {
       return res.status(400).json({ error: 'Limit must be between 1 and 50' });
     }
 
-    // Get Coffee Table products (current active theme)
-    const { data: products, error: productsError } = await supabase
+    // Get products filtered by category if provided
+    let query = supabase
       .from('products')
       .select('id, name, product_url, is_active')
-      .eq('is_active', true); // Only current Coffee Table products
+      .eq('is_active', true);
+
+    if (category) {
+      query = query.eq('category', category);
+    }
+
+    const { data: products, error: productsError } = await query;
 
     if (productsError) throw productsError;
 
-    // Get ALL voting records for Coffee Table products (IDs 36-55)
-    const coffeeTableIds = products.map(p => p.id);
+    // Get voting records for current category products only
+    const categoryProductIds = products.map(p => p.id);
+
+    if (categoryProductIds.length === 0) {
+      return res.status(200).json({
+        products: [],
+        totalProducts: 0,
+        productsWithVotes: 0
+      });
+    }
+
     const { data: votes, error: votesError } = await supabase
       .from('user_choices')
       .select('winner_id, loser_id')
-      .or(`winner_id.in.(${coffeeTableIds.join(',')}),loser_id.in.(${coffeeTableIds.join(',')})`);
+      .or(`winner_id.in.(${categoryProductIds.join(',')}),loser_id.in.(${categoryProductIds.join(',')})`);
 
     if (votesError) throw votesError;
 
-    // Note: votes already fetched above
-
     // Calculate win rates for each product
     const productStats = {};
-    const coffeeTableIdSet = new Set(coffeeTableIds);
+    const categoryIdSet = new Set(categoryProductIds);
 
     votes.forEach(vote => {
-      // Only count battles between Coffee Table products
-      if (coffeeTableIdSet.has(vote.winner_id) && coffeeTableIdSet.has(vote.loser_id)) {
+      // Only count battles between products in the same category
+      if (categoryIdSet.has(vote.winner_id) && categoryIdSet.has(vote.loser_id)) {
         // Track wins
         if (!productStats[vote.winner_id]) {
           productStats[vote.winner_id] = { wins: 0, losses: 0, total: 0 };
@@ -64,6 +77,15 @@ module.exports = async function handler(req, res) {
         productStats[vote.loser_id].total++;
       }
     });
+
+    // If no votes yet for this category, return empty
+    if (Object.keys(productStats).length === 0) {
+      return res.status(200).json({
+        products: [],
+        totalProducts: products.length,
+        productsWithVotes: 0
+      });
+    }
 
     // Create leaderboard with win rates
     const leaderboard = products

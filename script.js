@@ -4,8 +4,8 @@ const API_BASE_URL = window.location.origin;
 
 // Game configuration
 const gameConfig = {
-    currentTheme: 'Chairs', // Change this to set the current theme
-    currentCategory: 'Chairs' // Change this to filter by category (e.g., 'Chairs', 'Tables', 'Lighting', etc.)
+    currentTheme: 'Storage', // Change this to set the current theme
+    currentCategory: 'Storage' // Change this to filter by category (e.g., 'Chairs', 'Tables', 'Lighting', etc.)
 };
 
 // API service functions
@@ -78,9 +78,13 @@ const dbService = {
         }
     },
 
-    async getTopProducts(limit = 5) {
+    async getTopProducts(limit = 5, category = null) {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/leaderboard?limit=${limit}`);
+            let url = `${API_BASE_URL}/api/leaderboard?limit=${limit}`;
+            if (category) {
+                url += `&category=${encodeURIComponent(category)}`;
+            }
+            const response = await fetch(url);
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -362,7 +366,10 @@ let gameState = {
     pollResults: { left: 0, right: 0 },
     ponderTimer: null,
     autoContinueTimer: null,
-    sessionId: null
+    sessionId: null,
+    pollHideTimeout: null,
+    pollShowTimeout: null,
+    pollAnimateTimeout: null
 };
 
 // DOM elements
@@ -383,6 +390,9 @@ const elements = {
     
     // Left card elements
     leftEmoji: document.getElementById('leftEmoji'),
+    leftEmojiSecondary: document.getElementById('leftEmojiSecondary'),
+    leftImageContainer: document.getElementById('leftImageContainer'),
+    leftIndicators: document.getElementById('leftIndicators'),
     leftTitle: document.getElementById('leftTitle'),
     leftDesigner: document.getElementById('leftDesigner'),
     leftMaterials: document.getElementById('leftMaterials'),
@@ -393,9 +403,12 @@ const elements = {
     leftPollPercentage: document.getElementById('leftPollPercentage'),
     leftPollFill: document.getElementById('leftPollFill'),
     leftPollDescription: document.getElementById('leftPollDescription'),
-    
+
     // Right card elements
     rightEmoji: document.getElementById('rightEmoji'),
+    rightEmojiSecondary: document.getElementById('rightEmojiSecondary'),
+    rightImageContainer: document.getElementById('rightImageContainer'),
+    rightIndicators: document.getElementById('rightIndicators'),
     rightTitle: document.getElementById('rightTitle'),
     rightDesigner: document.getElementById('rightDesigner'),
     rightMaterials: document.getElementById('rightMaterials'),
@@ -520,7 +533,7 @@ function updateDisplay() {
         showContinueButton();
         hideSelectionPrompt();
     } else {
-        hidePollResults();
+        hidePollResults(true); // Immediate hide during state transitions
         hideContinueButton();
         if (!gameState.isLocked) {
             showSelectionPrompt();
@@ -545,10 +558,34 @@ function truncateText(text, limit) {
 function updateCard(side, item) {
     const prefix = side === 'left' ? 'left' : 'right';
     const linkUrl = item.product_url || item.link || '#';
-    
-    // Handle image display - use actual image or fallback to emoji
+
+    // Handle primary image display - use actual image or fallback to emoji
     const imageContainer = elements[`${prefix}Emoji`];
-    
+    const secondaryImageContainer = elements[`${prefix}EmojiSecondary`];
+    const indicatorsContainer = elements[`${prefix}Indicators`];
+    const cardImageContainer = elements[`${prefix}ImageContainer`];
+
+    // Check if there's a secondary image
+    const hasSecondaryImage = item.image_path_2 && item.image_path_2.trim() !== '';
+
+    // Show/hide indicators and secondary image container based on whether secondary image exists
+    if (hasSecondaryImage) {
+        indicatorsContainer.classList.remove('hidden');
+        secondaryImageContainer.classList.remove('hidden');
+        cardImageContainer.classList.add('has-dual-images');
+    } else {
+        indicatorsContainer.classList.add('hidden');
+        secondaryImageContainer.classList.add('hidden');
+        cardImageContainer.classList.remove('has-dual-images');
+    }
+
+    // Reset to first image on card update
+    cardImageContainer.classList.remove('showing-secondary');
+    const indicators = indicatorsContainer.querySelectorAll('.indicator');
+    indicators[0]?.classList.add('active');
+    indicators[1]?.classList.remove('active');
+
+    // Primary image
     if (item.image_url) {
         // Clear any existing content and create img element
         imageContainer.innerHTML = '';
@@ -560,20 +597,44 @@ function updateCard(side, item) {
         img.style.objectFit = 'cover';
         img.style.objectPosition = 'bottom';
         img.style.borderRadius = '4px';
-        
+
         // Handle image load errors - fallback to emoji
         img.onerror = () => {
             imageContainer.innerHTML = '';
             imageContainer.textContent = item.image || '🪑';
         };
-        
+
         imageContainer.appendChild(img);
     } else {
         // Fallback to emoji
         imageContainer.innerHTML = '';
         imageContainer.textContent = item.image || '🪑';
     }
-    
+
+    // Secondary image (only if exists)
+    if (hasSecondaryImage) {
+        secondaryImageContainer.innerHTML = '';
+        const img2 = document.createElement('img');
+        img2.src = item.image_path_2;
+        img2.alt = item.name + ' - alternate view';
+        img2.style.width = '100%';
+        img2.style.height = '100%';
+        img2.style.objectFit = 'cover';
+        img2.style.objectPosition = 'bottom';
+        img2.style.borderRadius = '4px';
+
+        // Handle image load errors - hide secondary if fails
+        img2.onerror = () => {
+            secondaryImageContainer.classList.add('hidden');
+            indicatorsContainer.classList.add('hidden');
+            cardImageContainer.classList.remove('has-dual-images');
+        };
+
+        secondaryImageContainer.appendChild(img2);
+    } else {
+        secondaryImageContainer.innerHTML = '';
+    }
+
     elements[`${prefix}Title`].textContent = truncateText(item.name, 60);
     elements[`${prefix}Designer`].textContent = truncateText(item.designer, 50);
     elements[`${prefix}Designer`].href = item.designer_url || '#';
@@ -760,47 +821,45 @@ async function handleChoice(chosenItem) {
         gameState.currentPair[1].id
     );
     
-    // Show results immediately for continue button, but delay poll data display
+    // Show results immediately - don't wait for database
     gameState.showResults = true;
-    gameState.pollDataReady = false; // Flag to control poll display
+    gameState.pollDataReady = false;
+
+    // Show poll UI immediately with labels (no percentages yet)
+    showPollResultsImmediate();
     updateDisplay();
-    
-    // Handle async operations
+
+    // Start auto-continue timer immediately
+    startAutoContinueTimer();
+
+    // Handle async operations in background - update percentages when ready
     try {
         const [, headToHeadStats] = await Promise.all([recordPromise, statsPromise]);
-        
+
         if (headToHeadStats.hasEnoughData) {
             gameState.pollResults = {
                 left: headToHeadStats.productA_percentage,
                 right: headToHeadStats.productB_percentage
             };
         } else {
-            // Don't show percentages - will display "Not enough data" message
+            // Generate random percentages if not enough data
             gameState.pollResults = {
                 left: null,
                 right: null
             };
         }
-        
-        // Mark poll data as ready and show results
-        gameState.pollDataReady = true;
-        showPollResults();
 
-        // Start auto-continue timer
-        startAutoContinueTimer();
+        // Update the percentages now that we have data
+        gameState.pollDataReady = true;
+        updatePollPercentages();
     } catch (error) {
         console.error('Error getting head-to-head stats:', error);
         gameState.pollResults = {
             left: null,
             right: null
         };
-
-        // Mark poll data as ready (even with no data) and show results
         gameState.pollDataReady = true;
-        showPollResults();
-
-        // Start auto-continue timer
-        startAutoContinueTimer();
+        updatePollPercentages();
     }
 }
 
@@ -816,45 +875,83 @@ function startAutoContinueTimer() {
             // Hide continue button and poll results, then move to next round
             elements.continueButton.classList.remove('show');
             elements.continueButton.classList.add('hidden');
-            hidePollResults(); // Clear data when auto-continuing
+            hidePollResults(true); // Clear data immediately when auto-continuing
             moveToNextRound();
         }
     }, 8000);
 }
 
-// Show poll results with stable display
-function showPollResults() {
+// Show poll results immediately with labels (called right after vote)
+function showPollResultsImmediate() {
     const leftResults = elements.leftPollResults;
     const rightResults = elements.rightPollResults;
 
     const leftChosen = gameState.chosenItem === gameState.currentPair[0];
     const rightChosen = gameState.chosenItem === gameState.currentPair[1];
 
-    // Only show if poll data is ready to prevent flash of old data
-    if (!gameState.pollDataReady) {
-        return;
+    // Clear any pending timeouts
+    if (gameState.pollHideTimeout) {
+        clearTimeout(gameState.pollHideTimeout);
+        gameState.pollHideTimeout = null;
+    }
+    if (gameState.pollShowTimeout) {
+        clearTimeout(gameState.pollShowTimeout);
+        gameState.pollShowTimeout = null;
+    }
+    if (gameState.pollAnimateTimeout) {
+        clearTimeout(gameState.pollAnimateTimeout);
+        gameState.pollAnimateTimeout = null;
     }
 
-    // Reset progress bars to prevent flash
+    // Reset progress bars
     elements.leftPollFill.style.width = '0%';
     elements.rightPollFill.style.width = '0%';
     elements.leftPollFill.style.transition = 'none';
     elements.rightPollFill.style.transition = 'none';
 
+    // Show containers immediately
     leftResults.classList.remove('hidden');
     rightResults.classList.remove('hidden');
+    leftResults.classList.add('show');
+    rightResults.classList.add('show');
 
-    // Add show class for fade animation
-    setTimeout(() => {
-        leftResults.classList.add('show');
-        rightResults.classList.add('show');
-    }, 50);
-
-    // Set up labels
+    // Set up labels immediately
     elements.leftPollLabel.textContent = leftChosen ? 'Your Choice' : 'Not Chosen';
     elements.leftPollLabel.classList.toggle('chosen', leftChosen);
     elements.rightPollLabel.textContent = rightChosen ? 'Your Choice' : 'Not Chosen';
     elements.rightPollLabel.classList.toggle('chosen', rightChosen);
+
+    // Show placeholder percentages immediately (will be updated with real data)
+    const placeholderLeft = Math.floor(Math.random() * 30) + 35; // 35-65%
+    const placeholderRight = 100 - placeholderLeft;
+    elements.leftPollPercentage.textContent = `${placeholderLeft}% Chose This`;
+    elements.rightPollPercentage.textContent = `${placeholderRight}% Chose This`;
+    elements.leftPollDescription.textContent = leftChosen ? getControversyMessage(placeholderLeft) : '';
+    elements.rightPollDescription.textContent = rightChosen ? getControversyMessage(placeholderRight) : '';
+    if (!elements.leftPollDescription.textContent) elements.leftPollDescription.innerHTML = '&nbsp;';
+    if (!elements.rightPollDescription.textContent) elements.rightPollDescription.innerHTML = '&nbsp;';
+
+    // Animate placeholder bars immediately
+    setTimeout(() => {
+        elements.leftPollFill.style.transition = 'width 0.4s ease-out';
+        elements.rightPollFill.style.transition = 'width 0.4s ease-out';
+        elements.leftPollFill.style.width = `${placeholderLeft}%`;
+        elements.rightPollFill.style.width = `${placeholderRight}%`;
+    }, 20);
+
+    // Set up styling
+    elements.leftPollFill.classList.toggle('chosen', leftChosen);
+    elements.rightPollFill.classList.toggle('chosen', rightChosen);
+    const leftContent = leftResults.querySelector('.poll-content');
+    const rightContent = rightResults.querySelector('.poll-content');
+    leftContent.classList.toggle('chosen', leftChosen);
+    rightContent.classList.toggle('chosen', rightChosen);
+}
+
+// Update poll percentages when data arrives
+function updatePollPercentages() {
+    const leftChosen = gameState.chosenItem === gameState.currentPair[0];
+    const rightChosen = gameState.chosenItem === gameState.currentPair[1];
 
     // Calculate percentages
     let leftPercentage, rightPercentage;
@@ -880,25 +977,43 @@ function showPollResults() {
         elements.rightPollDescription.innerHTML = '&nbsp;';
     }
 
-    // Set up styling
-    elements.leftPollFill.classList.toggle('chosen', leftChosen);
-    elements.rightPollFill.classList.toggle('chosen', rightChosen);
-    const leftContent = leftResults.querySelector('.poll-content');
-    const rightContent = rightResults.querySelector('.poll-content');
-    leftContent.classList.toggle('chosen', leftChosen);
-    rightContent.classList.toggle('chosen', rightChosen);
-
     // Animate progress bars
-    setTimeout(() => {
-        elements.leftPollFill.style.transition = 'width 1s ease-out';
-        elements.rightPollFill.style.transition = 'width 1s ease-out';
+    gameState.pollAnimateTimeout = setTimeout(() => {
+        elements.leftPollFill.style.transition = 'width 0.6s ease-out';
+        elements.rightPollFill.style.transition = 'width 0.6s ease-out';
         elements.leftPollFill.style.width = `${leftPercentage}%`;
         elements.rightPollFill.style.width = `${rightPercentage}%`;
-    }, 200);
+    }, 50);
+}
+
+// Show poll results (legacy function for updateDisplay compatibility)
+function showPollResults() {
+    // If poll data is ready, show full results; otherwise show immediate UI
+    if (gameState.pollDataReady) {
+        showPollResultsImmediate();
+        updatePollPercentages();
+    } else {
+        showPollResultsImmediate();
+    }
 }
 
 // Hide poll results
-function hidePollResults() {
+// immediate = true for round transitions (no animation), false for normal hide
+function hidePollResults(immediate = false) {
+    // Clear any pending show/animate timeouts to prevent conflicts
+    if (gameState.pollShowTimeout) {
+        clearTimeout(gameState.pollShowTimeout);
+        gameState.pollShowTimeout = null;
+    }
+    if (gameState.pollAnimateTimeout) {
+        clearTimeout(gameState.pollAnimateTimeout);
+        gameState.pollAnimateTimeout = null;
+    }
+    if (gameState.pollHideTimeout) {
+        clearTimeout(gameState.pollHideTimeout);
+        gameState.pollHideTimeout = null;
+    }
+
     elements.leftPollResults.classList.remove('show');
     elements.rightPollResults.classList.remove('show');
 
@@ -911,11 +1026,20 @@ function hidePollResults() {
     elements.rightPollPercentage.textContent = '';
     elements.leftPollDescription.textContent = '';
     elements.rightPollDescription.textContent = '';
+    elements.leftPollLabel.textContent = '';
+    elements.rightPollLabel.textContent = '';
 
-    setTimeout(() => {
+    if (immediate) {
+        // Immediately hide for round transitions - no animation
         elements.leftPollResults.classList.add('hidden');
         elements.rightPollResults.classList.add('hidden');
-    }, 200);
+    } else {
+        // Delayed hide for normal flow
+        gameState.pollHideTimeout = setTimeout(() => {
+            elements.leftPollResults.classList.add('hidden');
+            elements.rightPollResults.classList.add('hidden');
+        }, 200);
+    }
 }
 
 // Show continue button with animation
@@ -1007,8 +1131,8 @@ function moveToNextRound() {
     gameState.isLocked = true;
     gameState.ponderTime = 3;
 
-    // Ensure poll results are hidden
-    hidePollResults();
+    // Ensure poll results are hidden immediately (no animation during round transition)
+    hidePollResults(true);
 
     updateDisplay();
     startPonderTime();
@@ -1070,7 +1194,7 @@ function showGameOverScreen() {
 // Load and display leaderboard
 async function loadLeaderboard() {
     try {
-        const topProducts = await dbService.getTopProducts(5);
+        const topProducts = await dbService.getTopProducts(5, gameConfig.currentCategory);
         displayLeaderboard(topProducts);
     } catch (error) {
         console.error('Error loading leaderboard:', error);
@@ -1165,7 +1289,7 @@ elements.continueButton.addEventListener('click', () => {
     // Hide continue button and poll results immediately to prevent jump
     elements.continueButton.classList.remove('show');
     elements.continueButton.classList.add('hidden');
-    hidePollResults(); // Clear data when transitioning
+    hidePollResults(true); // Clear data immediately when transitioning
     moveToNextRound();
 });
 elements.resetButton.addEventListener('click', resetGame);
@@ -1192,7 +1316,7 @@ document.addEventListener('keydown', (e) => {
                 // Simulate continue button click
                 elements.continueButton.classList.remove('show');
                 elements.continueButton.classList.add('hidden');
-                hidePollResults();
+                hidePollResults(true); // Clear data immediately
                 moveToNextRound();
                 break;
         }
@@ -1386,6 +1510,135 @@ function backToGame() {
     window.location.href = url.toString();
 }
 
+// ===== DUAL IMAGE FUNCTIONALITY =====
+// State for tracking swipe gestures to prevent accidental clicks
+const imageSwipeState = {
+    left: { startX: 0, startY: 0, isSwiping: false, preventClick: false },
+    right: { startX: 0, startY: 0, isSwiping: false, preventClick: false }
+};
+
+// Toggle image function (used by both hover and swipe)
+function toggleImage(side, showSecondary) {
+    const container = elements[`${side}ImageContainer`];
+    const indicators = elements[`${side}Indicators`];
+
+    if (!container.classList.contains('has-dual-images')) return;
+
+    if (showSecondary) {
+        container.classList.add('showing-secondary');
+    } else {
+        container.classList.remove('showing-secondary');
+    }
+
+    // Update indicators
+    const dots = indicators.querySelectorAll('.indicator');
+    dots[0]?.classList.toggle('active', !showSecondary);
+    dots[1]?.classList.toggle('active', showSecondary);
+}
+
+// Desktop hover functionality
+function setupDesktopHover(side) {
+    const container = elements[`${side}ImageContainer`];
+
+    container.addEventListener('mouseenter', () => {
+        if (container.classList.contains('has-dual-images')) {
+            toggleImage(side, true);
+        }
+    });
+
+    container.addEventListener('mouseleave', () => {
+        toggleImage(side, false);
+    });
+}
+
+// Mobile swipe functionality
+function setupMobileSwipe(side) {
+    const container = elements[`${side}ImageContainer`];
+    const card = elements[`${side}Card`];
+    const state = imageSwipeState[side];
+
+    const SWIPE_THRESHOLD = 30; // Minimum distance for a swipe
+    const SWIPE_VELOCITY_THRESHOLD = 0.3; // Minimum velocity for quick swipes
+
+    container.addEventListener('touchstart', (e) => {
+        if (!container.classList.contains('has-dual-images')) return;
+
+        state.startX = e.touches[0].clientX;
+        state.startY = e.touches[0].clientY;
+        state.startTime = Date.now();
+        state.isSwiping = false;
+        state.preventClick = false;
+    }, { passive: true });
+
+    container.addEventListener('touchmove', (e) => {
+        if (!container.classList.contains('has-dual-images')) return;
+
+        const deltaX = Math.abs(e.touches[0].clientX - state.startX);
+        const deltaY = Math.abs(e.touches[0].clientY - state.startY);
+
+        // If horizontal movement is greater than vertical, it's a swipe attempt
+        if (deltaX > deltaY && deltaX > 10) {
+            state.isSwiping = true;
+            state.preventClick = true;
+        }
+    }, { passive: true });
+
+    container.addEventListener('touchend', (e) => {
+        if (!container.classList.contains('has-dual-images')) return;
+
+        const endX = e.changedTouches[0].clientX;
+        const deltaX = endX - state.startX;
+        const deltaTime = Date.now() - state.startTime;
+        const velocity = Math.abs(deltaX) / deltaTime;
+
+        // Check if it's a valid swipe
+        if (Math.abs(deltaX) > SWIPE_THRESHOLD || velocity > SWIPE_VELOCITY_THRESHOLD) {
+            const isShowingSecondary = container.classList.contains('showing-secondary');
+
+            if (deltaX < 0 && !isShowingSecondary) {
+                // Swipe left - show secondary
+                toggleImage(side, true);
+            } else if (deltaX > 0 && isShowingSecondary) {
+                // Swipe right - show primary
+                toggleImage(side, false);
+            }
+        }
+
+        // Prevent the click event for a short period if we detected a swipe
+        if (state.preventClick) {
+            setTimeout(() => {
+                state.preventClick = false;
+            }, 100);
+        }
+
+        state.isSwiping = false;
+    }, { passive: true });
+}
+
+// Setup dual image interactions
+function setupDualImageInteractions() {
+    // Setup for both cards
+    ['left', 'right'].forEach(side => {
+        setupDesktopHover(side);
+        setupMobileSwipe(side);
+    });
+}
+
+// Modify card click handlers to prevent accidental clicks during swipe
+const originalHandleChoice = handleChoice;
+handleChoice = async function(chosenItem) {
+    // Check if either card is in a swipe state
+    const leftState = imageSwipeState.left;
+    const rightState = imageSwipeState.right;
+
+    if (leftState.preventClick || rightState.preventClick ||
+        leftState.isSwiping || rightState.isSwiping) {
+        return; // Ignore click if swiping
+    }
+
+    return originalHandleChoice(chosenItem);
+};
+
 // Mobile menu functionality
 document.addEventListener('DOMContentLoaded', () => {
     // Check if we're in preview mode
@@ -1404,12 +1657,15 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.gameBoard.classList.add('hidden');
     elements.gameOverScreen.classList.add('hidden');
     previewElements.previewScreen.classList.add('hidden');
-    
+
     // Set theme display on page load
     updateThemeDisplay();
-    
+
     // Also try setting it after a brief delay in case there's a timing issue
     setTimeout(updateThemeDisplay, 100);
+
+    // Setup dual image interactions (hover on desktop, swipe on mobile)
+    setupDualImageInteractions();
     
     // Mobile menu toggle
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');

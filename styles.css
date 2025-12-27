@@ -343,7 +343,7 @@ body.ponder-mode {
     left: 0;
     right: 0;
     padding: 1rem;
-    color: black;
+    color: white;
     text-align: center;
 }
 
@@ -353,7 +353,7 @@ body.ponder-mode {
     left: 0;
     right: 0;
     padding: 1rem;
-    color: black;
+    color: white;
     text-align: center;
 }
 
@@ -369,7 +369,7 @@ body.ponder-mode {
     font-size: 24px;
     font-weight: 500;
     margin-bottom: 0;
-    opacity: 0.6;
+    opacity: 1.0; /* Full white on mobile */
 }
 
 .modal-right {
@@ -473,6 +473,7 @@ body.ponder-mode {
 
     .mobile-image {
         display: block;
+        object-position: center 75%; /* Start cropping from 3/4 down the image */
     }
 
     .desktop-image {
@@ -1150,12 +1151,17 @@ body.ponder-mode {
     border: 1px dashed #999999;
 }
 
-/* Allow links to still be clickable during ponder time */
+/* Allow links and image container to still be interactive during ponder time */
 .furniture-card.ponder-disabled .card-link,
 .furniture-card.ponder-disabled .card-designer {
     pointer-events: auto;
     cursor: pointer;
-    animation: gentle-border-pulse 2s ease-in-out infinite;
+}
+
+/* Allow image hover during ponder time for dual-image viewing */
+.furniture-card.ponder-disabled .card-image-container {
+    pointer-events: auto;
+    cursor: default;
 }
 
 /* Style controversy messages */
@@ -1243,6 +1249,86 @@ body.ponder-mode {
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: opacity 0.4s ease-in-out;
+}
+
+/* Secondary image - hidden by default */
+.card-emoji-secondary {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    z-index: 1;
+    transition: opacity 0.4s ease-in-out;
+}
+
+/* When showing secondary image */
+.card-image-container.showing-secondary .card-emoji {
+    opacity: 0;
+}
+
+.card-image-container.showing-secondary .card-emoji-secondary {
+    opacity: 1;
+}
+
+/* Image indicators (dots) */
+.image-indicators {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* Show indicators only when there are dual images */
+.card-image-container.has-dual-images .image-indicators {
+    opacity: 1;
+}
+
+.image-indicators .indicator {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+}
+
+.image-indicators .indicator.active {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(0, 0, 0, 0.25);
+}
+
+/* Desktop hover hint - subtle "hover for more" indicator */
+@media (min-width: 801px) {
+    .card-image-container.has-dual-images::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+            to right,
+            transparent 0%,
+            transparent 85%,
+            rgba(0, 0, 0, 0.03) 100%
+        );
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+        z-index: 5;
+    }
+
+    .card-image-container.has-dual-images:hover::after {
+        opacity: 1;
+    }
 }
 
 .card-content {
@@ -1706,7 +1792,45 @@ body.ponder-mode {
         font-weight: 500;
         margin-top: 0;
     }
-    
+
+    /* Mobile dual-image styles */
+    .image-indicators {
+        bottom: 8px;
+        gap: 5px;
+    }
+
+    .image-indicators .indicator {
+        width: 5px;
+        height: 5px;
+    }
+
+    /* Swipe hint animation for mobile */
+    .card-image-container.has-dual-images::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        right: 8px;
+        transform: translateY(-50%);
+        width: 20px;
+        height: 20px;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='rgba(0,0,0,0.3)'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9 5l7 7-7 7'/%3E%3C/svg%3E") center/contain no-repeat;
+        opacity: 0;
+        animation: swipeHint 2s ease-in-out 1s 2;
+        z-index: 5;
+        pointer-events: none;
+    }
+
+    .card-image-container.has-dual-images.showing-secondary::before {
+        right: auto;
+        left: 8px;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='rgba(0,0,0,0.3)'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M15 19l-7-7 7-7'/%3E%3C/svg%3E") center/contain no-repeat;
+    }
+
+    @keyframes swipeHint {
+        0%, 100% { opacity: 0; transform: translateY(-50%) translateX(0); }
+        50% { opacity: 0.6; transform: translateY(-50%) translateX(-5px); }
+    }
+
     .vs-divider {
         grid-row: 2;
         width: 60px;
