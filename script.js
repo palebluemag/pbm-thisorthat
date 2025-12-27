@@ -602,11 +602,15 @@ function updateCard(side, item) {
     const isMobile = window.innerWidth <= 768;
     let imagePosition = isMobile ? 'center 75%' : 'bottom';
 
-    // Specific product overrides
-    if (item.name === 'Succession') {
-        imagePosition = 'center';
-    } else if (item.name === 'Fresh Catch II' || item.name === 'Sona Cabinet') {
-        imagePosition = 'center 3%'; // Shift down slightly to show top of piece
+    // Specific product overrides (only on mobile)
+    if (isMobile) {
+        if (item.name === 'Succession') {
+            imagePosition = 'center';
+        } else if (item.name === 'Fresh Catch II' || item.name === 'Sona Cabinet') {
+            imagePosition = 'center 45%'; // Between default 75% and center, show more of top
+        } else if (item.name === 'Greasy Hot Dog Shelf') {
+            imagePosition = 'center 70%'; // Slightly higher than default 75%
+        }
     }
 
     // Primary image
