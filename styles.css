@@ -860,7 +860,7 @@ body.ponder-mode {
 }
 
 .winner-image-container {
-    aspect-ratio: 1;
+    aspect-ratio: 4/5;
     background: #fafafa;
     display: flex;
     align-items: center;

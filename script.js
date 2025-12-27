@@ -585,6 +585,10 @@ function updateCard(side, item) {
     indicators[0]?.classList.add('active');
     indicators[1]?.classList.remove('active');
 
+    // Determine image position - some products need different positioning
+    // Succession has a very tall first image that needs center positioning
+    const imagePosition = item.name === 'Succession' ? 'center' : 'bottom';
+
     // Primary image
     if (item.image_url) {
         // Clear any existing content and create img element
@@ -595,7 +599,7 @@ function updateCard(side, item) {
         img.style.width = '100%';
         img.style.height = '100%';
         img.style.objectFit = 'cover';
-        img.style.objectPosition = 'bottom';
+        img.style.objectPosition = imagePosition;
         img.style.borderRadius = '4px';
 
         // Handle image load errors - fallback to emoji
@@ -1137,6 +1141,9 @@ function showGameOverScreen() {
     const linkUrl = gameState.winner.product_url || gameState.winner.link || '#';
     
     // Handle winner image display
+    // Use center positioning for Succession (tall first image)
+    const winnerImagePosition = gameState.winner.name === 'Succession' ? 'center' : 'bottom';
+
     if (gameState.winner.image_url) {
         // Clear any existing content and create img element
         elements.winnerEmoji.innerHTML = '';
@@ -1146,7 +1153,7 @@ function showGameOverScreen() {
         img.style.width = '100%';
         img.style.height = '100%';
         img.style.objectFit = 'cover';
-        img.style.objectPosition = 'bottom';
+        img.style.objectPosition = winnerImagePosition;
         img.style.borderRadius = '4px';
         
         // Handle image load errors - fallback to emoji

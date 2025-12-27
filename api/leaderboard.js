@@ -23,19 +23,31 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'Limit must be between 1 and 50' });
     }
 
-    // Get products filtered by category if provided
-    let query = supabase
+    // Get all active products first
+    const { data: allProducts, error: productsError } = await supabase
       .from('products')
-      .select('id, name, product_url, is_active')
+      .select('id, name, product_url, is_active, category')
       .eq('is_active', true);
 
-    if (category) {
-      query = query.eq('category', category);
-    }
-
-    const { data: products, error: productsError } = await query;
-
     if (productsError) throw productsError;
+
+    // Filter by category if provided (handles array field)
+    let products = allProducts;
+    if (category) {
+      products = allProducts.filter(product => {
+        if (!product.category) return false;
+
+        try {
+          let categories = typeof product.category === 'string'
+            ? JSON.parse(product.category)
+            : product.category;
+
+          return Array.isArray(categories) && categories.includes(category);
+        } catch (e) {
+          return false;
+        }
+      });
+    }
 
     // Get voting records for current category products only
     const categoryProductIds = products.map(p => p.id);
