@@ -882,6 +882,7 @@ function startAutoContinueTimer() {
 }
 
 // Show poll results immediately with labels (called right after vote)
+// Shows container and labels only - percentages are added when data arrives
 function showPollResultsImmediate() {
     const leftResults = elements.leftPollResults;
     const rightResults = elements.rightPollResults;
@@ -921,23 +922,11 @@ function showPollResultsImmediate() {
     elements.rightPollLabel.textContent = rightChosen ? 'Your Choice' : 'Not Chosen';
     elements.rightPollLabel.classList.toggle('chosen', rightChosen);
 
-    // Show placeholder percentages immediately (will be updated with real data)
-    const placeholderLeft = Math.floor(Math.random() * 30) + 35; // 35-65%
-    const placeholderRight = 100 - placeholderLeft;
-    elements.leftPollPercentage.textContent = `${placeholderLeft}% Chose This`;
-    elements.rightPollPercentage.textContent = `${placeholderRight}% Chose This`;
-    elements.leftPollDescription.textContent = leftChosen ? getControversyMessage(placeholderLeft) : '';
-    elements.rightPollDescription.textContent = rightChosen ? getControversyMessage(placeholderRight) : '';
-    if (!elements.leftPollDescription.textContent) elements.leftPollDescription.innerHTML = '&nbsp;';
-    if (!elements.rightPollDescription.textContent) elements.rightPollDescription.innerHTML = '&nbsp;';
-
-    // Animate placeholder bars immediately
-    setTimeout(() => {
-        elements.leftPollFill.style.transition = 'width 0.4s ease-out';
-        elements.rightPollFill.style.transition = 'width 0.4s ease-out';
-        elements.leftPollFill.style.width = `${placeholderLeft}%`;
-        elements.rightPollFill.style.width = `${placeholderRight}%`;
-    }, 20);
+    // Show loading state - no percentages yet, just placeholder text
+    elements.leftPollPercentage.textContent = '...';
+    elements.rightPollPercentage.textContent = '...';
+    elements.leftPollDescription.innerHTML = '&nbsp;';
+    elements.rightPollDescription.innerHTML = '&nbsp;';
 
     // Set up styling
     elements.leftPollFill.classList.toggle('chosen', leftChosen);
@@ -977,13 +966,13 @@ function updatePollPercentages() {
         elements.rightPollDescription.innerHTML = '&nbsp;';
     }
 
-    // Animate progress bars
+    // Animate progress bars from 0% to actual percentage
     gameState.pollAnimateTimeout = setTimeout(() => {
-        elements.leftPollFill.style.transition = 'width 0.6s ease-out';
-        elements.rightPollFill.style.transition = 'width 0.6s ease-out';
+        elements.leftPollFill.style.transition = 'width 0.5s ease-out';
+        elements.rightPollFill.style.transition = 'width 0.5s ease-out';
         elements.leftPollFill.style.width = `${leftPercentage}%`;
         elements.rightPollFill.style.width = `${rightPercentage}%`;
-    }, 50);
+    }, 20);
 }
 
 // Show poll results (legacy function for updateDisplay compatibility)
