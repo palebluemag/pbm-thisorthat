@@ -606,10 +606,12 @@ function updateCard(side, item) {
     if (isMobile) {
         if (item.name === 'Succession') {
             imagePosition = 'center';
-        } else if (item.name === 'Fresh Catch II' || item.name === 'Sona Cabinet') {
-            imagePosition = 'center 45%'; // Between default 75% and center, show more of top
-        } else if (item.name === 'Greasy Hot Dog Shelf') {
-            imagePosition = 'center 70%'; // Slightly higher than default 75%
+        } else if (item.name === 'Fresh Catch II') {
+            imagePosition = 'center 55%'; // Show more of bottom
+        } else if (item.name === 'Sona Cabinet') {
+            imagePosition = 'center 50%'; // Slightly higher than Fresh Catch
+        } else if (item.name === 'Greasy Hot Dog Shelf' || item.name === 'Terra Book Rack') {
+            imagePosition = 'center 60%'; // Show more of top
         }
     }
 
@@ -648,7 +650,8 @@ function updateCard(side, item) {
         img2.style.width = '100%';
         img2.style.height = '100%';
         img2.style.objectFit = 'cover';
-        img2.style.objectPosition = 'bottom';
+        // Use same positioning as primary image for consistency
+        img2.style.objectPosition = imagePosition;
         img2.style.borderRadius = '4px';
 
         // Handle image load errors - hide secondary if fails
