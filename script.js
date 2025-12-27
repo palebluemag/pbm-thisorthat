@@ -1141,8 +1141,8 @@ function showGameOverScreen() {
     const linkUrl = gameState.winner.product_url || gameState.winner.link || '#';
     
     // Handle winner image display
-    // Use center positioning for Succession (tall first image)
-    const winnerImagePosition = gameState.winner.name === 'Succession' ? 'center' : 'bottom';
+    // Use center positioning for all winner images (matches card display better)
+    const winnerImagePosition = 'center';
 
     if (gameState.winner.image_url) {
         // Clear any existing content and create img element
