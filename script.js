@@ -586,8 +586,14 @@ function updateCard(side, item) {
     indicators[1]?.classList.remove('active');
 
     // Determine image position - some products need different positioning
-    // Succession has a very tall first image that needs center positioning
-    const imagePosition = item.name === 'Succession' ? 'center' : 'bottom';
+    // Succession needs center positioning (tall first image)
+    // Fresh Catch II and Sona Cabinet need slight downward shift (top cut off)
+    let imagePosition = 'bottom';
+    if (item.name === 'Succession') {
+        imagePosition = 'center';
+    } else if (item.name === 'Fresh Catch II' || item.name === 'Sona Cabinet') {
+        imagePosition = 'center 10%'; // Shift down slightly to show top of piece
+    }
 
     // Primary image
     if (item.image_url) {
