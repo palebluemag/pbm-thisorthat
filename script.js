@@ -971,12 +971,13 @@ function updatePollPercentages() {
     }
 
     // Animate progress bars from 0% to actual percentage
+    // Minimal delay, slower animation for smooth appearance
     gameState.pollAnimateTimeout = setTimeout(() => {
-        elements.leftPollFill.style.transition = 'width 0.5s ease-out';
-        elements.rightPollFill.style.transition = 'width 0.5s ease-out';
+        elements.leftPollFill.style.transition = 'width 1.2s ease-out';
+        elements.rightPollFill.style.transition = 'width 1.2s ease-out';
         elements.leftPollFill.style.width = `${leftPercentage}%`;
         elements.rightPollFill.style.width = `${rightPercentage}%`;
-    }, 20);
+    }, 10);
 }
 
 // Show poll results (legacy function for updateDisplay compatibility)

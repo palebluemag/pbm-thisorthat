@@ -1429,11 +1429,9 @@ body.ponder-mode {
     gap: 1rem;
     width: min(8vw, 120px);
     min-width: 100px;
-    align-self: flex-start;
+    align-self: center; /* Vertically center with product cards */
     flex-shrink: 0;
-    height: min(45vh, 500px);
-    min-height: 300px;
-    margin-top: 1rem;
+    margin-top: 4rem; /* Fine-tune to true center */
 }
 
 .vs-badge {
@@ -1594,7 +1592,7 @@ body.ponder-mode {
 
 /* Controls */
 .controls {
-    margin-top: 1rem;
+    margin-top: 2.5rem; /* Push down "Make Your Selection" */
     margin-bottom: 1rem;
     height: 2rem;
     display: flex;
