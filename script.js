@@ -443,13 +443,19 @@ async function initializeGame() {
         
         // Fetch products from Supabase using current category filter
         let products = await dbService.fetchActiveProducts(gameConfig.currentCategory);
-        
+
         // Fallback to hardcoded data if database fails
         if (!products || products.length === 0) {
             console.warn('No products from database, using fallback data');
             products = fallbackFurnitureItems;
         }
-        
+
+        // Filter out Succession on mobile (image doesn't display well on mobile)
+        const isMobile = window.innerWidth <= 768;
+        if (isMobile) {
+            products = products.filter(p => p.name !== 'Succession');
+        }
+
         // Shuffle products and select 16 for the game
         const shuffled = [...products].sort(() => 0.5 - Math.random());
         const selected = shuffled.slice(0, Math.min(16, shuffled.length));
@@ -472,7 +478,13 @@ async function initializeGame() {
     } catch (error) {
         console.error('Error initializing game:', error);
         // Fallback to hardcoded data
-        const shuffled = [...fallbackFurnitureItems].sort(() => 0.5 - Math.random());
+        let fallbackProducts = [...fallbackFurnitureItems];
+        // Filter out Succession on mobile
+        const isMobileFallback = window.innerWidth <= 768;
+        if (isMobileFallback) {
+            fallbackProducts = fallbackProducts.filter(p => p.name !== 'Succession');
+        }
+        const shuffled = fallbackProducts.sort(() => 0.5 - Math.random());
         const selected = shuffled.slice(0, 16);
 
         gameState.gamePool = selected;
@@ -586,13 +598,15 @@ function updateCard(side, item) {
     indicators[1]?.classList.remove('active');
 
     // Determine image position - some products need different positioning
-    // Succession needs center positioning (tall first image)
-    // Fresh Catch II and Sona Cabinet need slight downward shift (top cut off)
-    let imagePosition = 'bottom';
+    // Desktop uses 'bottom', mobile uses 'center 75%' as default
+    const isMobile = window.innerWidth <= 768;
+    let imagePosition = isMobile ? 'center 75%' : 'bottom';
+
+    // Specific product overrides
     if (item.name === 'Succession') {
         imagePosition = 'center';
     } else if (item.name === 'Fresh Catch II' || item.name === 'Sona Cabinet') {
-        imagePosition = 'center 10%'; // Shift down slightly to show top of piece
+        imagePosition = 'center 3%'; // Shift down slightly to show top of piece
     }
 
     // Primary image
@@ -1560,15 +1574,13 @@ function setupMobileSwipe(side) {
     const card = elements[`${side}Card`];
     const state = imageSwipeState[side];
 
-    const SWIPE_THRESHOLD = 30; // Minimum distance for a swipe
-    const SWIPE_VELOCITY_THRESHOLD = 0.3; // Minimum velocity for quick swipes
+    const SWIPE_THRESHOLD = 40; // Minimum distance for a swipe (increased to prevent accidental taps)
 
     container.addEventListener('touchstart', (e) => {
         if (!container.classList.contains('has-dual-images')) return;
 
         state.startX = e.touches[0].clientX;
         state.startY = e.touches[0].clientY;
-        state.startTime = Date.now();
         state.isSwiping = false;
         state.preventClick = false;
     }, { passive: true });
@@ -1580,7 +1592,7 @@ function setupMobileSwipe(side) {
         const deltaY = Math.abs(e.touches[0].clientY - state.startY);
 
         // If horizontal movement is greater than vertical, it's a swipe attempt
-        if (deltaX > deltaY && deltaX > 10) {
+        if (deltaX > deltaY && deltaX > 15) {
             state.isSwiping = true;
             state.preventClick = true;
         }
@@ -1591,11 +1603,9 @@ function setupMobileSwipe(side) {
 
         const endX = e.changedTouches[0].clientX;
         const deltaX = endX - state.startX;
-        const deltaTime = Date.now() - state.startTime;
-        const velocity = Math.abs(deltaX) / deltaTime;
 
-        // Check if it's a valid swipe
-        if (Math.abs(deltaX) > SWIPE_THRESHOLD || velocity > SWIPE_VELOCITY_THRESHOLD) {
+        // Check if it's a valid swipe - require actual distance, not just velocity
+        if (Math.abs(deltaX) > SWIPE_THRESHOLD) {
             const isShowingSecondary = container.classList.contains('showing-secondary');
 
             if (deltaX < 0 && !isShowingSecondary) {

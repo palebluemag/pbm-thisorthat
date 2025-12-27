@@ -1842,7 +1842,7 @@ body.ponder-mode {
         background: transparent;
         border-radius: 0;
         padding: 0;
-        margin: 0.5rem 0; /* Small vertical spacing between cards */
+        margin: 0.6rem 0; /* Vertical spacing between cards */
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -1851,7 +1851,7 @@ body.ponder-mode {
         flex-shrink: 0;
         position: relative;
     }
-    
+
     .vs-badge {
         padding: 0.25rem 0.5rem;
         font-size: 0.7rem;
@@ -2058,7 +2058,7 @@ body.ponder-mode {
         background: transparent;
         border-radius: 0;
         padding: 0;
-        margin: 0.5rem 0; /* Small vertical spacing between cards */
+        margin: 0.6rem 0; /* Vertical spacing between cards */
         display: flex;
         flex-direction: column;
         align-items: center;
