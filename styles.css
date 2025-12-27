@@ -1803,37 +1803,33 @@ body.ponder-mode {
         height: 5px;
     }
 
-    /* Swipe hint animation for mobile */
+    /* Swipe hint animation for mobile - elegant arrow */
     .card-image-container.has-dual-images::before {
-        content: 'SWIPE';
+        content: '';
         position: absolute;
         top: 50%;
-        right: 10px;
+        right: 12px;
         transform: translateY(-50%);
-        font-family: 'Diatype', sans-serif;
-        font-size: 0.55rem;
-        font-weight: 600;
-        letter-spacing: 0.08em;
-        color: rgba(255, 255, 255, 0.95);
-        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-        padding: 5px 10px;
-        background: rgba(0, 0, 0, 0.5);
-        border-radius: 3px;
+        width: 24px;
+        height: 24px;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M9 5l7 7-7 7'/%3E%3C/svg%3E") center/contain no-repeat;
+        filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
         opacity: 0;
-        animation: swipeHint 2.5s ease-in-out 0.5s 3;
+        animation: swipeArrow 2s ease-in-out 0.8s 2;
         z-index: 5;
         pointer-events: none;
     }
 
     .card-image-container.has-dual-images.showing-secondary::before {
-        content: 'SWIPE';
         right: auto;
-        left: 10px;
+        left: 12px;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M15 19l-7-7 7-7'/%3E%3C/svg%3E") center/contain no-repeat;
     }
 
-    @keyframes swipeHint {
-        0%, 100% { opacity: 0; transform: translateY(-50%); }
-        20%, 80% { opacity: 1; transform: translateY(-50%); }
+    @keyframes swipeArrow {
+        0%, 100% { opacity: 0; transform: translateY(-50%) translateX(0); }
+        15%, 85% { opacity: 0.9; }
+        50% { transform: translateY(-50%) translateX(-4px); }
     }
 
     .vs-divider {
@@ -1846,7 +1842,7 @@ body.ponder-mode {
         background: transparent;
         border-radius: 0;
         padding: 0;
-        margin: 0; /* Reset desktop margin */
+        margin: 0.5rem 0; /* Small vertical spacing between cards */
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -1990,11 +1986,11 @@ body.ponder-mode {
     }
 
     .card-emoji {
-        object-position: center 75% !important; /* Anchor 25% from bottom on mobile */
+        /* Let JavaScript control object-position for per-product customization */
     }
 
     .card-emoji img {
-        object-position: center 75% !important; /* Anchor 25% from bottom on mobile */
+        /* Let JavaScript control object-position for per-product customization */
     }
 
     .card-content {
@@ -2062,7 +2058,7 @@ body.ponder-mode {
         background: transparent;
         border-radius: 0;
         padding: 0;
-        margin: 0; /* Reset desktop margin */
+        margin: 0.5rem 0; /* Small vertical spacing between cards */
         display: flex;
         flex-direction: column;
         align-items: center;
