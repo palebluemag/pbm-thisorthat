@@ -607,9 +607,9 @@ function updateCard(side, item) {
         if (item.name === 'Succession') {
             imagePosition = 'center';
         } else if (item.name === 'Fresh Catch II') {
-            imagePosition = 'center 55%'; // Show more of bottom
+            imagePosition = 'center 57%'; // Show more of bottom
         } else if (item.name === 'Sona Cabinet') {
-            imagePosition = 'center 50%'; // Slightly higher than Fresh Catch
+            imagePosition = 'center 52%'; // Show more of bottom
         } else if (item.name === 'Greasy Hot Dog Shelf' || item.name === 'Terra Book Rack') {
             imagePosition = 'center 60%'; // Show more of top
         }
