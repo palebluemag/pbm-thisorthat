@@ -1,0 +1,21 @@
+{
+  "_comment": "Weekly rotation. The job picks the theme used least recently. 'slug' is the Adorno catalog category (adorno.design/catalog/...). Add, remove or reorder freely.",
+  "rotation": [
+    { "slug": "table-lamps",     "name": "Table Lamps" },
+    { "slug": "coffee-tables",   "name": "Coffee Tables" },
+    { "slug": "accent-chairs",   "name": "Accent Chairs" },
+    { "slug": "vases",           "name": "Vases" },
+    { "slug": "side-tables",     "name": "Side Tables" },
+    { "slug": "floor-lamps",     "name": "Floor Lamps" },
+    { "slug": "sculptures",      "name": "Sculptures" },
+    { "slug": "low-stools",      "name": "Stools" },
+    { "slug": "pendant-lamps",   "name": "Pendant Lamps" },
+    { "slug": "lounge-chairs",   "name": "Lounge Chairs" },
+    { "slug": "wall-mirrors",    "name": "Mirrors" },
+    { "slug": "candle-holders",  "name": "Candle Holders" },
+    { "slug": "shelves",         "name": "Shelving" },
+    { "slug": "dining-chairs",   "name": "Dining Chairs" },
+    { "slug": "bowls",           "name": "Bowls" },
+    { "slug": "benches",         "name": "Benches" }
+  ]
+}

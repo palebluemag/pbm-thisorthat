@@ -1,0 +1,66 @@
+name: Weekly game refresh
+
+# Mondays 13:00 UTC (8am New York): publish last week's reviewed theme,
+# then stage next week's theme from Adorno and open a review issue.
+on:
+  schedule:
+    - cron: '0 13 * * 1'
+  workflow_dispatch:
+    inputs:
+      only:
+        description: 'Run only one step'
+        type: choice
+        options: [both, publish, stage]
+        default: both
+      slug:
+        description: 'Force a specific Adorno category slug (e.g. table-lamps). Leave blank for the rotation.'
+        required: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --omit=dev
+
+      - name: Publish & stage
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          ARGS=""
+          if [ "${{ inputs.only }}" = "publish" ] || [ "${{ inputs.only }}" = "stage" ]; then ARGS="--only=${{ inputs.only }}"; fi
+          if [ -n "${{ inputs.slug }}" ]; then ARGS="$ARGS --slug=${{ inputs.slug }}"; fi
+          node scripts/weekly-refresh.mjs $ARGS
+
+      - name: Open review issue
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REVIEW_URL: https://thisorthat.palebluemagazine.com/review.html
+        run: |
+          [ -f refresh-result.json ] || exit 0
+          node -e '
+            const r = require("./refresh-result.json"), url = process.env.REVIEW_URL;
+            const lines = [];
+            if (r.published) lines.push(`✅ **${r.published.theme}** is now live with ${r.published.products} products.`);
+            if (r.staged) lines.push(`🆕 **${r.staged.theme}** staged: ${r.staged.products} products, ${r.staged.flagged} with photos to check.`);
+            if (r.awaitingReview) lines.push(`⏳ **${r.awaitingReview.theme}** is still waiting: ${r.awaitingReview.approved} approved, ${r.awaitingReview.pending} unchecked.`);
+            r.notes.forEach(n => lines.push(`- ${n}`));
+            const needsReview = r.staged || r.awaitingReview;
+            if (needsReview) lines.push("", `👉 Check crops and approve: ${url}`, "", "It publishes at the next Monday run once 11+ products are approved, or press **Publish now** on the review page.");
+            require("fs").writeFileSync("issue.md", lines.join("\n"));
+            require("fs").writeFileSync("issue-title.txt", needsReview
+              ? `Review crops: ${(r.staged || r.awaitingReview).theme}`
+              : `Weekly refresh: ${r.published ? r.published.theme + " live" : "no changes"}`);
+          '
+          gh issue create --title "$(cat issue-title.txt)" --body-file issue.md

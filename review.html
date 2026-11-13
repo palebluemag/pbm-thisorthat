@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Crop Review · This or That</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --ink:#111; --muted:#6b6b6b; --line:#e5e5e5; --bg:#fafafa; --card:#fff; --ok:#1f7a3a; --warn:#b4540a; --bad:#b42318; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:Inter, system-ui, sans-serif; color:var(--ink); background:var(--bg); font-size:14px; }
+  header { position:sticky; top:0; z-index:5; background:#fff; border-bottom:1px solid var(--line); padding:14px 24px; display:flex; gap:16px; align-items:center; flex-wrap:wrap; }
+  header h1 { font-size:16px; font-weight:700; margin:0; letter-spacing:-0.01em; }
+  header .theme { font-weight:500; color:var(--muted); }
+  .counts { display:flex; gap:12px; font-variant-numeric:tabular-nums; color:var(--muted); }
+  .counts b { color:var(--ink); font-weight:600; }
+  .spacer { flex:1; }
+  button, select { font:inherit; border:1px solid var(--ink); background:#fff; color:var(--ink); padding:7px 12px; border-radius:4px; cursor:pointer; }
+  button.primary { background:var(--ink); color:#fff; }
+  button:disabled { opacity:.4; cursor:not-allowed; }
+  button.small { padding:4px 9px; font-size:12px; }
+  main { padding:24px; max-width:1180px; margin:0 auto; }
+  .notice { background:#fff; border:1px solid var(--line); border-radius:6px; padding:16px 18px; margin-bottom:20px; color:var(--muted); line-height:1.5; }
+  .notice b { color:var(--ink); }
+  .product { background:var(--card); border:1px solid var(--line); border-radius:6px; padding:18px; margin-bottom:16px; display:grid; grid-template-columns: 260px 1fr; gap:20px; }
+  .product.approved { border-color:#b7dfc3; }
+  .product.rejected { opacity:.45; }
+  .meta input { font:inherit; font-weight:600; font-size:15px; border:1px solid transparent; padding:3px 5px; margin:-4px -6px 2px; width:100%; border-radius:3px; }
+  .meta input:hover, .meta input:focus { border-color:var(--line); outline:none; }
+  .meta .designer { color:var(--muted); margin-bottom:8px; }
+  .meta .materials { font-size:12px; color:var(--muted); margin-bottom:10px; }
+  .meta a { color:var(--muted); font-size:12px; }
+  .warn { font-size:12px; color:var(--warn); margin:8px 0 0; padding-left:16px; }
+  .warn li { margin-bottom:3px; }
+  .status { margin-top:12px; display:flex; gap:6px; flex-wrap:wrap; }
+  .status .on.approve { background:var(--ok); border-color:var(--ok); color:#fff; }
+  .status .on.reject { background:var(--bad); border-color:var(--bad); color:#fff; }
+  .photos { display:flex; gap:28px; flex-wrap:wrap; }
+  .photo h4 { margin:0 0 8px; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+  .frames { display:flex; gap:14px; align-items:flex-start; }
+  .frame-wrap { display:flex; flex-direction:column; gap:6px; }
+  .frame-label { font-size:11px; color:var(--muted); display:flex; justify-content:space-between; align-items:center; gap:6px; }
+  .frame { position:relative; overflow:hidden; border:1px solid var(--line); border-radius:4px; background:#f3f3f3; cursor:grab; touch-action:none; }
+  .frame.dragging { cursor:grabbing; }
+  .frame.desktop { width:176px; aspect-ratio:4/5; }
+  .frame.mobile { width:200px; aspect-ratio:270/260; }
+  .frame img { width:100%; height:100%; display:block; user-select:none; -webkit-user-drag:none; pointer-events:none; }
+  .frame.contain { cursor:default; }
+  .fit-toggle { font-size:11px; padding:2px 7px; }
+  .cover-badge { font-size:11px; color:var(--ok); font-weight:600; }
+  .saving { font-size:12px; color:var(--muted); min-width:60px; text-align:right; }
+  #login { max-width:380px; margin:12vh auto; background:#fff; border:1px solid var(--line); border-radius:6px; padding:28px; }
+  #login input { width:100%; font:inherit; padding:9px 10px; border:1px solid var(--line); border-radius:4px; margin:12px 0; }
+  @media (max-width: 760px) {
+    header { padding:12px 16px; } main { padding:16px; }
+    .product { grid-template-columns: 1fr; }
+    .frames { flex-wrap:wrap; }
+  }
+</style>
+</head>
+<body>
+<div id="login" hidden>
+  <h1 style="font-size:16px;margin:0 0 6px">Crop review</h1>
+  <div style="color:var(--muted)">Enter the review token (the <code>REVIEW_TOKEN</code> value).</div>
+  <input id="tokenInput" type="password" autocomplete="current-password" placeholder="Review token">
+  <button class="primary" id="tokenBtn">Continue</button>
+  <div id="loginErr" style="color:var(--bad);margin-top:10px"></div>
+</div>
+
+<div id="app" hidden>
+  <header>
+    <h1>Crop review</h1><span class="theme" id="themeName"></span>
+    <div class="counts" id="counts"></div>
+    <div class="spacer"></div>
+    <select id="which" title="Which theme to review">
+      <option value="staged">Next week (staged)</option>
+      <option value="live">Live now</option>
+    </select>
+    <button id="approveClean">Approve all unflagged</button>
+    <button class="primary" id="publishBtn">Publish now</button>
+    <span class="saving" id="saving"></span>
+  </header>
+  <main>
+    <div class="notice" id="notice"></div>
+    <div id="list"></div>
+  </main>
+</div>
+
+<script src="crop.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+const PREVIEW_FILE = params.get('file');           // local preview of a dry run: ?file=scripts/out/dry-run.json
+const store = { get(k){ try { return localStorage.getItem(k); } catch { return null; } }, set(k,v){ try { localStorage.setItem(k,v); } catch {} } };
+let token = store.get('pbm-review-token') || '';
+let state = { theme: null, products: [], minToPublish: 11 };
+const $ = id => document.getElementById(id);
+
+async function api(method, body, query = '') {
+  const res = await fetch('/api/review' + query, {
+    method, headers: { 'Content-Type': 'application/json', 'x-review-token': token },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.status === 401) { showLogin('That token was not accepted.'); throw new Error('unauthorized'); }
+  if (!res.ok) throw Object.assign(new Error(data.reason || data.error || 'Request failed'), { data });
+  return data;
+}
+
+function showLogin(msg = '') { $('app').hidden = true; $('login').hidden = false; $('loginErr').textContent = msg; $('tokenInput').focus(); }
+$('tokenBtn').onclick = () => { token = $('tokenInput').value.trim(); store.set('pbm-review-token', token); load(); };
+$('tokenInput').onkeydown = e => { if (e.key === 'Enter') $('tokenBtn').click(); };
+$('which').onchange = load;
+
+async function load() {
+  try {
+    if (PREVIEW_FILE) {
+      const d = await (await fetch(PREVIEW_FILE)).json();
+      state = { theme: { id: 0, name: d.theme.name + ' (dry-run preview, nothing saves)', status: 'preview' }, minToPublish: 11,
+        products: d.rows.map((r, i) => ({ ...r, id: i + 1, review_status: 'pending' })) };
+    } else {
+      if (!token) return showLogin();
+      state = await api('GET', null, '?which=' + $('which').value);
+    }
+    $('login').hidden = true; $('app').hidden = false;
+    render();
+  } catch (e) { if (e.message !== 'unauthorized') alert(e.message); }
+}
+
+// ---------- saving ----------
+const timers = {}, queued = {};
+function save(p, fields) {
+  if (PREVIEW_FILE) return;
+  clearTimeout(timers[p.id]);
+  queued[p.id] = { ...(queued[p.id] || {}), ...fields };
+  $('saving').textContent = 'Saving…';
+  timers[p.id] = setTimeout(async () => {
+    const pending = queued[p.id]; delete queued[p.id];
+    try { await api('POST', { action: 'save', id: p.id, ...pending }); $('saving').textContent = 'Saved'; }
+    catch (e) { $('saving').textContent = ''; alert('Could not save: ' + e.message); }
+  }, fields.image_crops ? 500 : 0);
+}
+
+// ---------- rendering ----------
+function counts() {
+  const c = { approved: 0, pending: 0, rejected: 0 };
+  state.products.forEach(p => c[p.review_status] = (c[p.review_status] || 0) + 1);
+  return c;
+}
+function renderHeader() {
+  const c = counts(), t = state.theme;
+  $('themeName').textContent = t ? '— ' + t.name : '';
+  $('counts').innerHTML = `<span><b>${c.approved}</b> approved</span><span><b>${c.pending}</b> to check</span><span><b>${c.rejected}</b> rejected</span>`;
+  const isStaged = t && t.status === 'staged';
+  $('publishBtn').hidden = !isStaged;
+  $('publishBtn').disabled = c.approved < state.minToPublish;
+  $('publishBtn').title = `Needs at least ${state.minToPublish} approved`;
+  $('approveClean').hidden = !t || !state.products.length;
+
+  let notice;
+  if (!t) notice = $('which').value === 'live'
+    ? 'No live theme is managed by the weekly job yet.'
+    : '<b>Nothing waiting for review.</b> The weekly job will stage the next theme on its next run.';
+  else if (t.status === 'preview') notice = '<b>Local preview of a dry run.</b> Crops and approvals here are not saved.';
+  else if (isStaged) notice = `<b>${t.name}</b> goes live at the next weekly run once at least <b>${state.minToPublish}</b> products are approved (or press Publish now). Flagged photos are listed first. Drag a photo to move the crop; <b>Fit</b> shows the whole photo padded with its background colour.`;
+  else notice = `<b>${t.name}</b> is live. Crop changes and rejections apply to the game right away.`;
+  $('notice').innerHTML = notice;
+}
+
+function render() {
+  renderHeader();
+  const list = $('list');
+  list.innerHTML = '';
+  const order = p => (p.review_status === 'rejected' ? 2 : 0) + ((p.crop_warnings || []).length ? 0 : 1);
+  [...state.products].sort((a, b) => order(a) - order(b)).forEach(p => list.appendChild(productEl(p)));
+}
+
+function productEl(p) {
+  const el = document.createElement('section');
+  el.className = 'product ' + (p.review_status || '');
+  const isCover = state.theme && state.theme.cover_image === p.image_path;
+  el.innerHTML = `
+    <div class="meta">
+      <input value="${esc(p.name)}" aria-label="Product name">
+      <div class="designer">${esc(p.designer || '')}</div>
+      <div class="materials">${esc(p.materials || '')}</div>
+      <a href="${esc(p.product_url)}" target="_blank" rel="noopener">View on Adorno ↗</a>
+      ${(p.crop_warnings || []).length ? `<ul class="warn">${p.crop_warnings.map(w => `<li>${esc(w)}</li>`).join('')}</ul>` : ''}
+      <div class="status">
+        <button class="small approve ${p.review_status === 'approved' ? 'on' : ''}">Approve</button>
+        <button class="small reject ${p.review_status === 'rejected' ? 'on' : ''}">Reject</button>
+        ${state.theme && state.theme.status !== 'preview' ? (isCover ? '<span class="cover-badge">✓ Start-screen cover</span>' : '<button class="small cover">Use as cover</button>') : ''}
+      </div>
+    </div>
+    <div class="photos"></div>`;
+
+  el.querySelector('input').onchange = e => { p.name = e.target.value; save(p, { name: p.name }); };
+  el.querySelector('.approve').onclick = () => setStatus(p, p.review_status === 'approved' ? 'pending' : 'approved');
+  el.querySelector('.reject').onclick = () => setStatus(p, p.review_status === 'rejected' ? 'pending' : 'rejected');
+  const coverBtn = el.querySelector('.cover');
+  if (coverBtn) coverBtn.onclick = async () => {
+    await api('POST', { action: 'cover', theme_id: state.theme.id, cover_image: p.image_path });
+    state.theme.cover_image = p.image_path; render();
+  };
+
+  const photos = el.querySelector('.photos');
+  [[1, p.image_path, 'Main photo'], [2, p.image_path_2, 'Second photo (hover / swipe)']].forEach(([n, src, label]) => {
+    if (!src) return;
+    p.image_crops = p.image_crops || {};
+    p.image_crops[n] = p.image_crops[n] || { bg: '#ffffff', desktop: { pos: '50% 50%', fit: 'cover' }, mobile: { pos: '50% 50%', fit: 'cover' } };
+    const block = document.createElement('div');
+    block.className = 'photo';
+    block.innerHTML = `<h4>${label}</h4><div class="frames"></div>`;
+    ['desktop', 'mobile'].forEach(frame => block.querySelector('.frames').appendChild(frameEl(p, n, src, frame)));
+    photos.appendChild(block);
+  });
+  return el;
+}
+
+function frameEl(p, n, src, frame) {
+  const wrap = document.createElement('div');
+  wrap.className = 'frame-wrap';
+  const c = p.image_crops[n][frame];
+  wrap.innerHTML = `<div class="frame-label"><span>${frame === 'desktop' ? 'Desktop' : 'Phone'}</span>
+    <button class="small fit-toggle">${c.fit === 'contain' ? 'Fit ✓' : 'Fill'}</button></div>
+    <div class="frame ${frame}"><img alt="" src="${esc(src)}"></div>`;
+  const box = wrap.querySelector('.frame'), img = box.querySelector('img');
+  const paint = () => { PBMCrop.applyCrop(img, p, n, frame); box.classList.toggle('contain', c.fit === 'contain'); };
+  paint();
+
+  wrap.querySelector('.fit-toggle').onclick = e => {
+    c.fit = c.fit === 'contain' ? 'cover' : 'contain';
+    e.target.textContent = c.fit === 'contain' ? 'Fit ✓' : 'Fill';
+    paint(); save(p, { image_crops: p.image_crops });
+  };
+
+  // Drag to reposition: convert pixel movement into object-position %.
+  box.addEventListener('pointerdown', e => {
+    if (c.fit === 'contain' || !img.naturalWidth) return;
+    box.setPointerCapture(e.pointerId); box.classList.add('dragging');
+    const fw = box.clientWidth, fh = box.clientHeight;
+    const scale = Math.max(fw / img.naturalWidth, fh / img.naturalHeight);
+    const overX = img.naturalWidth * scale - fw, overY = img.naturalHeight * scale - fh;
+    const [px0, py0] = c.pos.split(' ').map(v => parseFloat(v));
+    const sx = e.clientX, sy = e.clientY;
+    const move = ev => {
+      const nx = overX > 1 ? clamp(px0 - (ev.clientX - sx) / overX * 100) : 50;
+      const ny = overY > 1 ? clamp(py0 - (ev.clientY - sy) / overY * 100) : 50;
+      c.pos = `${Math.round(nx)}% ${Math.round(ny)}%`; paint();
+    };
+    const up = () => { box.classList.remove('dragging'); box.removeEventListener('pointermove', move); save(p, { image_crops: p.image_crops }); };
+    box.addEventListener('pointermove', move);
+    box.addEventListener('pointerup', up, { once: true });
+    box.addEventListener('pointercancel', up, { once: true });
+  });
+  return wrap;
+}
+
+function setStatus(p, status) { p.review_status = status; save(p, { review_status: status }); render(); }
+
+$('approveClean').onclick = () => {
+  state.products.filter(p => p.review_status === 'pending' && !(p.crop_warnings || []).length)
+    .forEach(p => { p.review_status = 'approved'; save(p, { review_status: 'approved' }); });
+  render();
+};
+
+$('publishBtn').onclick = async () => {
+  if (!confirm(`Publish "${state.theme.name}" to the game now? The current theme will be retired.`)) return;
+  try { const r = await api('POST', { action: 'publish', theme_id: state.theme.id }); alert(`"${r.theme.name}" is live with ${r.approved} products.`); load(); }
+  catch (e) { alert(e.message); }
+};
+
+const clamp = v => Math.min(100, Math.max(0, v));
+const esc = s => String(s ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+load();
+</script>
+</body>
+</html>

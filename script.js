@@ -8,10 +8,37 @@ const gameConfig = {
     currentCategory: 'Storage' // Change this to filter by category (e.g., 'Chairs', 'Tables', 'Lighting', etc.)
 };
 
+// The live theme is set weekly by scripts/weekly-refresh.mjs (themes table).
+// gameConfig above is only the fallback if that lookup fails.
+const themeReady = fetch(`${API_BASE_URL}/api/config`)
+    .then(r => (r.ok ? r.json() : null))
+    .then(cfg => {
+        if (!cfg || !cfg.theme) return;
+        gameConfig.currentTheme = cfg.theme.name;
+        gameConfig.currentCategory = cfg.theme.category;
+        gameConfig.coverImage = cfg.theme.cover_image;
+    })
+    .catch(err => console.warn('Theme config unavailable, using defaults', err))
+    .finally(() => {
+        const apply = () => {
+            if (typeof updateThemeDisplay === 'function') updateThemeDisplay();
+            if (gameConfig.coverImage) {
+                document.querySelectorAll('.background-image .desktop-image, .background-image .mobile-image').forEach(img => {
+                    img.src = gameConfig.coverImage;
+                    img.alt = gameConfig.currentTheme;
+                });
+            }
+        };
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', apply);
+        else apply();
+    });
+
 // API service functions
 const dbService = {
     async fetchActiveProducts(category = null) {
         try {
+            await themeReady;
+            category = category && gameConfig.currentCategory;
             const url = category 
                 ? `${API_BASE_URL}/api/products?category=${encodeURIComponent(category)}`
                 : `${API_BASE_URL}/api/products`;
@@ -597,23 +624,8 @@ function updateCard(side, item) {
     indicators[0]?.classList.add('active');
     indicators[1]?.classList.remove('active');
 
-    // Determine image position - some products need different positioning
-    // Desktop uses 'bottom', mobile uses 'center 75%' as default
-    const isMobile = window.innerWidth <= 768;
-    let imagePosition = isMobile ? 'center 75%' : 'bottom';
-
-    // Specific product overrides (only on mobile)
-    if (isMobile) {
-        if (item.name === 'Succession') {
-            imagePosition = 'center';
-        } else if (item.name === 'Fresh Catch II') {
-            imagePosition = 'center 57%'; // Show more of bottom
-        } else if (item.name === 'Sona Cabinet') {
-            imagePosition = 'center 52%'; // Show more of bottom
-        } else if (item.name === 'Greasy Hot Dog Shelf' || item.name === 'Terra Book Rack') {
-            imagePosition = 'center 60%'; // Show more of top
-        }
-    }
+    // Crop/fit per product and per screen size comes from image_crops (set on
+    // the review page); see crop.js.
 
     // Primary image
     if (item.image_url) {
@@ -624,8 +636,7 @@ function updateCard(side, item) {
         img.alt = item.name;
         img.style.width = '100%';
         img.style.height = '100%';
-        img.style.objectFit = 'cover';
-        img.style.objectPosition = imagePosition;
+        PBMCrop.applyCrop(img, item, 1);
         img.style.borderRadius = '4px';
 
         // Handle image load errors - fallback to emoji
@@ -649,9 +660,7 @@ function updateCard(side, item) {
         img2.alt = item.name + ' - alternate view';
         img2.style.width = '100%';
         img2.style.height = '100%';
-        img2.style.objectFit = 'cover';
-        // Use same positioning as primary image for consistency
-        img2.style.objectPosition = imagePosition;
+        PBMCrop.applyCrop(img2, item, 2);
         img2.style.borderRadius = '4px';
 
         // Handle image load errors - hide secondary if fails
@@ -1182,6 +1191,8 @@ function showGameOverScreen() {
         img.style.height = '100%';
         img.style.objectFit = 'cover';
         img.style.objectPosition = winnerImagePosition;
+        // Winner frame is 4:5 on every screen, same as the desktop card.
+        if (gameState.winner.image_crops) PBMCrop.applyCrop(img, gameState.winner, 1, 'desktop');
         img.style.borderRadius = '4px';
         
         // Handle image load errors - fallback to emoji
@@ -1496,8 +1507,9 @@ function createPreviewProductElement(product) {
         img.style.height = '100%';
         img.style.objectFit = 'cover';
         img.style.objectPosition = 'bottom';
+        if (product.image_crops) PBMCrop.applyCrop(img, product, 1, 'desktop');
         img.style.borderRadius = '4px';
-        
+
         // Handle image load errors - fallback to emoji
         img.onerror = () => {
             imageContainer.innerHTML = '';

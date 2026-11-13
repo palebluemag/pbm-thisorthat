@@ -56,6 +56,23 @@ This is a static site with Supabase backend integration. Open `index.html` direc
 - No linting/testing framework configured
 - Database operations will work immediately (uses public Supabase endpoint)
 
+## Weekly Content Automation
+
+Content refreshes itself from Adorno (adorno.design, a WooCommerce site with a public Store API at `/wp-json/wc/store/v1/products`). The manual "fill a sheet and upload" process is no longer needed.
+
+- **`.github/workflows/weekly-refresh.yml`**: Mondays 13:00 UTC. Runs `scripts/weekly-refresh.mjs`, then opens a GitHub issue linking to the review page.
+- **`scripts/weekly-refresh.mjs`**:
+  1. *Publish*: makes the staged theme live if it has ≥11 approved products. The old theme's products are set inactive.
+  2. *Stage*: picks the least recently used category from `scripts/themes.json` and pulls the newest in-stock products (one per designer, no size variants), adding the `?wpam_id=75` affiliate tag. It auto-crops and inserts up to 20 products as `review_status='pending'`, `is_active=false`.
+  - `--dry-run [--slug=table-lamps]` writes to `scripts/out/dry-run.json` without touching the DB. Preview it at `review.html?file=scripts/out/dry-run.json`.
+- **`scripts/lib/adorno.mjs`**: fetching and cleanup (short names, materials, descriptions, 1280px image renditions). The designer name is scraped from each product page (`.designer-name`).
+- **`scripts/lib/autocrop.mjs`**: locates the product in each photo and sets `image_crops`. If cropping would cut more than 12% of the product, it uses `fit: contain` padded with the photo's edge colour. Remaining problems go into `crop_warnings`.
+- **`review.html` + `api/review.js`**: token-protected (`REVIEW_TOKEN`) page for dragging crops, toggling Fill/Fit, editing names, approving or rejecting, choosing the cover and publishing now.
+- **`crop.js`**: shared crop rendering. Frames are desktop 4:5 and phone (≤800px) 270:260. Legacy products without `image_crops` keep their old per-name positions.
+- **`api/config.js`**: returns the live theme (name, category, cover). `script.js` falls back to `gameConfig` if it fails.
+- **DB**: `themes` table (staged → live → archived/skipped) plus product columns `theme_id, review_status, image_crops, crop_warnings, source, source_id`. See `supabase/migrations/20261113_weekly_refresh.sql`.
+- **Secrets**: GitHub needs `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`. Vercel needs `SUPABASE_SERVICE_ROLE_KEY` and `REVIEW_TOKEN`, in addition to the existing variables.
+
 ## Styling
 
 Uses Pale Blue Magazine aesthetic:
