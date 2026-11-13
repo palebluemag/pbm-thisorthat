@@ -46,7 +46,7 @@ jobs:
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
-          REVIEW_URL: https://design-showdown.vercel.app/review.html
+          REVIEW_URL: https://play.palebluemagazine.com/review.html
         run: |
           [ -f refresh-result.json ] || exit 0
           node -e '
