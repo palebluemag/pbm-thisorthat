@@ -58,6 +58,7 @@ jobs:
             r.notes.forEach(n => lines.push(`- ${n}`));
             const needsReview = r.staged || r.awaitingReview;
             if (needsReview) lines.push("", `👉 Check crops and approve: ${url}`, "", "It publishes at the next Monday run once 11+ products are approved, or press **Publish now** on the review page.");
+            lines.push("", "cc @palebluemag");
             require("fs").writeFileSync("issue.md", lines.join("\n"));
             require("fs").writeFileSync("issue-title.txt", needsReview
               ? `Review crops: ${(r.staged || r.awaitingReview).theme}`
