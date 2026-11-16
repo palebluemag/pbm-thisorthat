@@ -2321,3 +2321,83 @@ body.ponder-mode {
     
     /* furniture-card mobile styles automatically apply to .preview-row .furniture-card */
 }
+/* Newsletter sign-up on the winner screen (2026-11-15) */
+.winner-signup {
+    border-top: 1px solid #e5e5e5;
+    padding-top: 1.5rem;
+    margin-top: auto;
+    text-align: center;
+}
+.winner-signup-title {
+    font-family: 'Diatype', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #000000;
+    margin: 0 0 0.6rem;
+}
+.winner-signup-text {
+    font-family: 'Diatype', sans-serif;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: #555555;
+    margin: 0 auto 1rem;
+    max-width: 300px;
+}
+.winner-signup-form {
+    display: flex;
+    width: 70%;
+    margin: 0 auto;
+}
+.winner-signup-form input[type=email] {
+    flex: 1;
+    min-width: 0;
+    border: 1px solid #000000;
+    border-right: 0;
+    border-radius: 0;
+    padding: 0.6rem 0.75rem;
+    font-family: 'Diatype', sans-serif;
+    font-size: 0.75rem;
+    background: #ffffff;
+    color: #000000;
+    outline: none;
+}
+.winner-signup-form button {
+    border: 1px solid #000000;
+    border-radius: 0;
+    background: #000000;
+    color: #ffffff;
+    padding: 0.6rem 0.9rem;
+    font-family: 'Diatype', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+}
+.winner-signup-form button:hover { background: #333333; }
+.winner-signup-form button:disabled { opacity: 0.6; cursor: default; }
+.winner-signup-note {
+    font-family: 'Diatype', sans-serif;
+    font-size: 0.7rem;
+    color: #555555;
+    min-height: 1em;
+    margin: 0.5rem 0 0;
+}
+.winner-signup-note a { text-decoration: underline; color: inherit; }
+.winner-signup-done-h {
+    font-family: 'Diatype', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #000000;
+    margin: 0 0 0.35rem;
+}
+/* Desktop: the Start New Game button is absolutely positioned, so leave room for it */
+@media (min-width: 768px) {
+    .winner-signup { margin-bottom: calc(2.5rem + 3.5rem); }
+}
+@media (max-width: 767px) {
+    .winner-signup { margin: 1.5rem 0; }
+    .winner-signup-form { width: 100%; }
+}
