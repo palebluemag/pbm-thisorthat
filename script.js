@@ -1721,3 +1721,59 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+// Newsletter sign-up on the winner screen. Posts to Kit in the background;
+// falls back to a normal form submit (new tab) if the request is blocked.
+(function () {
+    const form = document.querySelector('.winner-signup-form');
+    if (!form) return;
+    const note = document.querySelector('.winner-signup-note');
+    const input = form.querySelector('input[type=email]');
+    const button = form.querySelector('button');
+    const domainFixes = {
+        'gmial.com': 'gmail.com', 'gmai.com': 'gmail.com', 'gmal.com': 'gmail.com', 'gamil.com': 'gmail.com',
+        'gnail.com': 'gmail.com', 'gmail.co': 'gmail.com', 'gmail.con': 'gmail.com', 'gmail.cm': 'gmail.com',
+        'gmaill.com': 'gmail.com', 'yaho.com': 'yahoo.com', 'yahooo.com': 'yahoo.com', 'yahoo.co': 'yahoo.com',
+        'yahoo.con': 'yahoo.com', 'hotmial.com': 'hotmail.com', 'hotmai.com': 'hotmail.com', 'hotmail.co': 'hotmail.com',
+        'hotmail.con': 'hotmail.com', 'outlok.com': 'outlook.com', 'outlook.co': 'outlook.com', 'outlook.con': 'outlook.com',
+        'iclod.com': 'icloud.com', 'icloud.co': 'icloud.com', 'icloud.con': 'icloud.com', 'icoud.com': 'icloud.com'
+    };
+    function suggest(value) {
+        const m = String(value).trim().toLowerCase().match(/^([^@\s]+)@([^@\s]+)$/);
+        if (!m) return '';
+        if (domainFixes[m[2]]) return m[1] + '@' + domainFixes[m[2]];
+        if (/\.(con|cmo|vom|comm|om)$/.test(m[2])) return m[1] + '@' + m[2].replace(/\.(con|cmo|vom|comm|om)$/, '.com');
+        return '';
+    }
+    form.addEventListener('submit', (e) => {
+        if (!window.fetch || !input.value) return;
+        e.preventDefault();
+        const fix = suggest(input.value);
+        if (fix && form.dataset.checked !== input.value) {
+            form.dataset.checked = input.value;
+            note.innerHTML = 'Did you mean <a href="#">' + fix + '</a>?';
+            note.querySelector('a').onclick = (ev) => { ev.preventDefault(); input.value = fix; note.textContent = ''; };
+            return;
+        }
+        const label = button.textContent;
+        button.disabled = true;
+        button.textContent = 'Subscribing…';
+        note.textContent = '';
+        const data = new FormData();
+        data.append('email_address', input.value);
+        data.append('referrer', 'https://play.palebluemagazine.com/');
+        fetch(form.action, { method: 'POST', body: data, headers: { Accept: 'application/json' } })
+            .then((r) => r.json())
+            .then((j) => {
+                if (j && j.status === 'success') {
+                    const box = document.getElementById('winnerSignup');
+                    box.innerHTML = '<p class="winner-signup-done-h">You’re on the list!</p>' +
+                        '<p class="winner-signup-text" style="margin-bottom:0">Thank you for joining the Pale Blue community. We can’t wait to share our next roundup with you.</p>';
+                    return;
+                }
+                button.disabled = false;
+                button.textContent = label;
+                note.textContent = 'That email didn’t go through. Please check it and try again.';
+            })
+            .catch(() => { button.disabled = false; button.textContent = label; form.submit(); });
+    });
+})();
